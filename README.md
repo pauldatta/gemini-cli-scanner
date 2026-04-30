@@ -61,7 +61,27 @@ This scanner reads your `~/.gemini/`, `~/.claude/`, and any code repos you point
 5. **Score** your environment sophistication (0-105) so you know what capabilities you're leaving on the table
 6. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
 
-## Standalone Usage
+## Interactive TUI
+
+For a visual experience with arrow-key navigation, score dashboard, and report viewer:
+
+```bash
+# From cloned repo
+make
+# or
+node tui.js
+```
+
+The TUI provides:
+- **Quick Scan** — environment-only, no API key needed
+- **Full Scan** — with AI-powered skill suggestions
+- **Scan with Repos** — include code repositories
+- **View Report** — colorized markdown in your terminal
+- **View Score** — visual score breakdown with progress bars
+
+> The Gemini CLI extension uses the scanner directly via `/scan` — no TUI needed.
+
+## Standalone Usage (headless)
 
 You can also run the scanner directly without installing as an extension:
 

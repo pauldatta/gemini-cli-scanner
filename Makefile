@@ -1,8 +1,8 @@
 # gemini-cli-scanner v3.0.0 — Lightweight TUI via Make
 # Usage: just run `make` to see all available commands
 
-.DEFAULT_GOAL := help
-.PHONY: help scan scan-full scan-repos test version install link clean
+.DEFAULT_GOAL := tui
+.PHONY: help tui scan scan-full scan-repos test version install link clean
 
 # Colors
 CYAN  := \033[36m
@@ -10,6 +10,9 @@ GREEN := \033[32m
 YELLOW := \033[33m
 RESET := \033[0m
 BOLD  := \033[1m
+
+tui: ## Launch interactive TUI
+	@node tui.js
 
 help: ## Show this help menu
 	@echo ""
