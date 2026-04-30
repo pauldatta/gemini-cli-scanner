@@ -9,156 +9,374 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
   <style>
+    /* ── Design tokens ── */
     :root {
-      --base-background-color: #0d1117;
-      --cover-background-color: #0d1117;
-      --cover-background-image: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
-      --cover-heading-color: #58a6ff;
-      --cover-color: #c9d1d9;
-      --cover-button-primary-color: #58a6ff;
-      --cover-blockquote-color: #8b949e;
-      --sidebar-background: #0d1117;
-      --sidebar-nav-link-color--active: #58a6ff;
-      --link-color: #58a6ff;
-      --heading-color: #c9d1d9;
-      --code-inline-background: #161b22;
-      --code-theme-background: #161b22;
-      --blockquote-border-color: #58a6ff;
+      --bg-primary: #0d1117;
+      --bg-card: #161b22;
+      --bg-elevated: #1c2128;
+      --border: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --accent: #58a6ff;
+      --accent-bright: #79c0ff;
+      --accent-glow: rgba(88, 166, 255, 0.15);
+      /* Docsify theme overrides */
+      --base-background-color: var(--bg-primary);
+      --sidebar-background: var(--bg-primary);
+      --sidebar-nav-link-color--active: var(--accent);
+      --link-color: var(--accent);
+      --heading-color: var(--text-primary);
+      --code-inline-background: var(--bg-card);
+      --code-theme-background: var(--bg-card);
+      --blockquote-border-color: var(--accent);
     }
 
-    /* Cover page customization */
-    section.cover {
+    /* ── Landing page ── */
+    .landing {
       min-height: 100vh;
-      background: var(--cover-background-image) !important;
+      background: linear-gradient(180deg, var(--bg-primary) 0%, #111820 100%);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
     }
-    section.cover .cover-main {
-      max-width: 800px;
+    .landing a { color: var(--accent); text-decoration: none; }
+    .landing a:hover { color: var(--accent-bright); }
+
+    /* Hero */
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 2rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
     }
-    section.cover h1 {
-      font-size: 2.6rem;
+    .hero-text h1 {
+      font-size: 2.8rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 50%, #a5d6ff 100%);
+      margin: 0 0 0.25rem;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 50%, #a5d6ff 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 0.5rem;
+      line-height: 1.1;
     }
-    section.cover h1 small {
-      font-size: 0.4em;
+    .hero-text h1 .version {
+      font-size: 0.35em;
       font-weight: 400;
       background: none;
-      -webkit-text-fill-color: #8b949e;
-      vertical-align: middle;
+      -webkit-text-fill-color: var(--text-secondary);
     }
-    section.cover blockquote {
-      border-left: none;
-      text-align: center;
-    }
-    section.cover blockquote p {
-      font-size: 1.05rem;
-      line-height: 1.6;
-    }
-    /* Install command block on cover */
-    section.cover pre {
-      max-width: 400px;
-      margin: 1rem auto;
-      border-radius: 8px;
-      border: 1px solid #30363d;
-      background: #161b22 !important;
-      text-align: left;
-    }
-    section.cover code {
-      font-size: 1rem;
+    .hero-tagline {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin: 0.5rem 0 1.25rem;
     }
 
-    /* Video styling */
-    .promo-video {
-      width: 100%;
-      max-width: 720px;
-      margin: 1.5rem auto;
-      border-radius: 12px;
-      border: 1px solid #30363d;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
-      display: block;
+    /* Feature pills */
+    .feature-pills {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    .pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      white-space: nowrap;
     }
 
-    /* Badge row */
-    .cover-main p:first-of-type img {
-      margin: 0 4px;
-    }
-
-    /* Sidebar tweaks */
-    .sidebar-nav li a {
+    /* Value prop */
+    .hero-desc {
       font-size: 0.95rem;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+    .hero-desc strong { color: var(--text-primary); }
+
+    /* Install box */
+    .install-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.75rem 0.6rem 1rem;
+      max-width: 360px;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .install-box:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .install-box code { flex: 1; background: none; }
+    .install-box .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      padding: 0.3rem 0.5rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .install-box .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .install-box .copy-btn.copied { color: #3fb950; border-color: #3fb950; }
+
+    /* Extension install alt */
+    .install-alt {
+      margin-top: 0.6rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+    .install-ext {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .install-ext code {
+      font-size: 0.8rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      margin-left: 0.25rem;
+      transition: border-color 0.2s;
+    }
+    .install-ext:hover code {
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
-    /* Content area */
-    .markdown-section {
-      max-width: 860px;
-    }
-    .markdown-section table {
-      display: table;
+    /* Video */
+    .hero-media video {
       width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 24px var(--accent-glow);
     }
 
-    /* Scroll hint indicator */
-    .scroll-hint {
-      position: absolute;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
+    /* ── How it works ── */
+    .how-section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem 2rem;
+    }
+    .how-section h2 {
       text-align: center;
-      color: #8b949e;
-      font-size: 0.85rem;
-      letter-spacing: 0.05em;
-      animation: fadeInUp 1.5s ease-out 2s both;
-    }
-    .scroll-hint span {
-      display: block;
-      margin-bottom: 0.4rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text-secondary);
       text-transform: uppercase;
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.1em;
+      margin-bottom: 1.5rem;
     }
-    .scroll-chevron {
-      font-size: 1.6rem;
-      line-height: 1;
-      animation: bounceDown 2s ease-in-out infinite;
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .how-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .how-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .how-card h3 {
+      font-size: 1rem;
+      margin: 0 0 0.5rem;
+      color: var(--text-primary);
+    }
+    .how-card p {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: var(--text-secondary);
+      margin: 0;
     }
 
-    @keyframes bounceDown {
-      0%, 100% { transform: translateY(0); opacity: 0.6; }
-      50% { transform: translateY(8px); opacity: 1; }
+    /* ── CTA bar ── */
+    .cta-bar {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 2rem 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none !important;
     }
-
-    /* CTA button glow */
-    section.cover .cover-main > p:last-of-type a {
-      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    .cta-primary {
+      background: var(--accent);
+      color: #fff !important;
+      border: 1px solid var(--accent);
     }
-    section.cover .cover-main > p:last-of-type a:hover {
-      box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
+    .cta-primary:hover {
+      background: var(--accent-bright);
+      box-shadow: 0 0 20px var(--accent-glow);
       transform: translateY(-1px);
     }
-
-    /* Responsive */
-    @media (max-width: 600px) {
-      section.cover h1 { font-size: 1.8rem; }
-      .promo-video { border-radius: 8px; }
-      .scroll-hint { bottom: 1rem; }
+    .cta-outline {
+      background: transparent;
+      color: var(--accent) !important;
+      border: 1px solid var(--border);
     }
+    .cta-outline:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .cta-spacer { flex: 1; }
+    .cta-github {
+      color: var(--text-secondary) !important;
+      font-size: 0.88rem;
+    }
+    .cta-github:hover { color: var(--text-primary) !important; }
+
+    /* Scroll hint */
+    .scroll-hint {
+      text-align: center;
+      padding: 1rem 0 2rem;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .scroll-chevron {
+      font-size: 1.4rem;
+      animation: bounceDown 2s ease-in-out infinite;
+    }
+    @keyframes bounceDown {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(6px); opacity: 1; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; gap: 2rem; padding: 2rem 1.5rem 1rem; }
+      .hero-text h1 { font-size: 2rem; }
+      .hero-media { order: -1; }
+      .how-grid { grid-template-columns: 1fr; }
+      .how-section { padding: 2rem 1.5rem 1rem; }
+      .cta-bar { flex-wrap: wrap; padding: 1.5rem; }
+    }
+
+    /* ── Docsify overrides ── */
+    .sidebar-nav li a { font-size: 0.95rem; }
+    .markdown-section { max-width: 860px; }
+    .markdown-section table { display: table; width: 100%; }
   </style>
 </head>
 <body>
+  <!-- Custom landing page (replaces Docsify coverpage) -->
+  <section class="landing" id="landing">
+    <div class="hero">
+      <div class="hero-text">
+        <h1>gemini-cli-scanner <span class="version">v3.3.1</span></h1>
+        <p class="hero-tagline">Your AI coding environment, audited.</p>
+        <div class="feature-pills">
+          <span class="pill">📊 Maturity Scoring</span>
+          <span class="pill">🔍 Pattern Detection</span>
+          <span class="pill">⚡ Skill Generation</span>
+        </div>
+        <p class="hero-desc">
+          Scan your Gemini CLI conversations to <strong>extract tribal knowledge</strong>.
+          The scanner identifies repeating patterns in your prompts, tool calls, and workflows
+          — then generates production-ready <strong>SKILL.md</strong> files you can use yourself
+          or share with your team. Get a
+          <a href="#/advisory-engine">maturity report</a> scoring your
+          environment across <strong>8 categories</strong> with actionable, doc-linked recommendations.
+        </p>
+        <div class="install-box" onclick="copyCmd(this, 'npx gemini-cli-scanner')" title="Click to copy">
+          <code>npx gemini-cli-scanner</code>
+          <button class="copy-btn" aria-label="Copy install command">📋 Copy</button>
+        </div>
+        <div class="install-alt">
+          Or install as a <a href="#/quick-start#install-as-extension">Gemini CLI extension</a>:
+          <span class="install-ext" onclick="copyCmd(this.parentElement, 'gemini extensions install https://github.com/pauldatta/gemini-cli-scanner')" title="Click to copy">
+            <code>gemini extensions install ↗</code>
+          </span>
+        </div>
+      </div>
+      <div class="hero-media">
+        <video controls autoplay loop muted playsinline>
+          <source src="_media/promo.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+
+    <div class="how-section">
+      <h2>How It Works</h2>
+      <div class="how-grid">
+        <div class="how-card">
+          <h3>💬 Scan Conversations</h3>
+          <p>Reads your chat history, tool usage, config files, and multi-tool ecosystem. All processing is local — no data leaves your machine.</p>
+        </div>
+        <div class="how-card">
+          <h3>🤖 AI Pattern Detection</h3>
+          <p>A <a href="#/skill-suggestions">two-stage Gemini pipeline</a> identifies repeating workflows from your real usage data and generates reusable skill templates.</p>
+        </div>
+        <div class="how-card">
+          <h3>📋 Maturity Report</h3>
+          <p>Scores your environment <strong>0–115</strong> across <a href="#/advisory-engine">8 categories</a> — from policy hygiene to MCP governance — with actionable recommendations.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-bar">
+      <a href="#/quick-start" class="cta-btn cta-primary">⚡ Quick Start</a>
+      <a href="#/README" class="cta-btn cta-outline">📖 Documentation</a>
+      <span class="cta-spacer"></span>
+      <a href="https://github.com/pauldatta/gemini-cli-scanner" class="cta-github" target="_blank">GitHub →</a>
+    </div>
+
+    <div class="scroll-hint">
+      <span>Scroll for full documentation</span>
+      <div class="scroll-chevron">⌄</div>
+    </div>
+  </section>
+
+  <!-- Docsify app -->
   <div id="app"></div>
+
   <script>
+    // Copy any command
+    function copyCmd(el, cmd) {
+      navigator.clipboard.writeText(cmd);
+      const btn = el.querySelector('.copy-btn') || el.querySelector('code');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      if (btn.classList) btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = orig; if (btn.classList) btn.classList.remove('copied'); }, 2000);
+    }
+
     window.$docsify = {
       name: '🔍 gemini-cli-scanner',
       repo: 'https://github.com/pauldatta/gemini-cli-scanner',
-      coverpage: true,
+      coverpage: false,
       loadSidebar: true,
       subMaxLevel: 3,
       auto2top: true,
