@@ -6,11 +6,11 @@ How the scanner transforms raw conversation history into production-grade agent 
 
 The scanner uses a **three-layer pipeline** that progressively narrows thousands of raw interactions down to 3-5 actionable, production-ready SKILL.md files. Each layer is designed for a specific job:
 
-| Layer | Where | Purpose | Cost |
-|:---|:---|:---|:---|
-| **1. Pre-Clustering** | Local (Node.js) | Collapse raw prompts into frequency-ranked patterns | Zero |
-| **2. Candidate Identification** | `gemini-3.1-flash-lite` | Select 3-5 skill candidates from patterns | ~2K tokens |
-| **3. Skill Writing** | `gemini-3.1-pro` (parallel) | Write full SKILL.md per candidate | ~4K tokens each |
+| Layer | Where | Purpose |
+|:---|:---|:---|
+| **1. Pre-Clustering** | Local (Node.js) | Collapse raw prompts into frequency-ranked patterns |
+| **2. Candidate Identification** | `gemini-3.1-flash-lite` | Select 3-5 skill candidates from patterns |
+| **3. Skill Writing** | `gemini-3.1-pro` (parallel) | Write full SKILL.md per candidate |
 
 ```
 Raw Prompts (423+)          Tool Usage (3,943+ calls)
@@ -21,7 +21,6 @@ Raw Prompts (423+)          Tool Usage (3,943+ calls)
 │  • Normalize (lowercase, strip paths)    │
 │  • Group by 3-word leading phrases       │
 │  • Sort by frequency, keep top 20        │
-│  Cost: $0                                │
 └──────────────┬───────────────────────────┘
                │ ~20 pattern clusters
                ▼
@@ -30,7 +29,6 @@ Raw Prompts (423+)          Tool Usage (3,943+ calls)
 │  Model: flash-lite (temp 0.3, 2K tok)    │
 │  Input: clusters + tools + existing      │
 │  Output: 3-5 candidates with rationale   │
-│  Cost: ~$0.001                           │
 └──────────────┬───────────────────────────┘
                │ 3-5 structured candidates
                ▼
@@ -40,7 +38,6 @@ Raw Prompts (423+)          Tool Usage (3,943+ calls)
 │  Input: 1 candidate + exemplar + rules   │
 │  Output: complete SKILL.md              │
 │  All candidates written concurrently     │
-│  Cost: ~$0.01 per skill                  │
 └──────────────────────────────────────────┘
 ```
 
@@ -186,16 +183,3 @@ Each stage has model fallbacks in case the primary model isn't available in your
 | Write | `gemini-3.1-pro-preview` | `gemini-3-pro-preview` | `gemini-3-flash-preview` |
 
 If all writer models fail for a candidate, the scanner returns a stub template with the key tools listed, so you still get actionable guidance even in degraded mode.
-
-## Cost Profile
-
-For a typical scan with 423 prompts producing 4 skills:
-
-| Component | Model | Tokens | Approx. Cost |
-|:---|:---|---:|---:|
-| Local clustering | — | 0 | $0.00 |
-| Candidate identification | flash-lite | ~2K | ~$0.001 |
-| Skill writing (×4) | pro | ~16K total | ~$0.04 |
-| **Total** | | **~18K** | **~$0.04** |
-
-The two-stage design keeps costs at roughly 1/10th what a single monolithic pro call would cost, while producing higher-quality output through focused per-skill context.
