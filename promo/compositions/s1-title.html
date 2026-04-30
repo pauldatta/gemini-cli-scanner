@@ -1,0 +1,66 @@
+<template id="s1-title-template">
+<div id="s1-title" data-composition-id="s1-title" data-start="0" data-width="1920" data-height="1080">
+
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+  <div class="line ln-t"></div>
+  <div class="line ln-b"></div>
+
+  <div class="c">
+    <div class="badge">OPEN SOURCE · NPM</div>
+    <div class="name">gemini-cli-scanner</div>
+    <div class="tag">Extract tribal knowledge from how you <em>actually</em> use AI tools.</div>
+    <div class="term">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="body"><span class="p">$</span> <span class="cmd">npx gemini-cli-scanner</span><span class="cur">▌</span></div>
+    </div>
+    <div class="pills"><span class="pl">Zero install</span><span class="pl">Zero config</span><span class="pl pa">One command</span></div>
+  </div>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap');
+    #s1-title { background:#000; color:#F1F5F9; font-family:'JetBrains Mono',monospace; overflow:hidden; }
+    .glow { position:absolute; border-radius:50%; filter:blur(100px); z-index:0; }
+    .g1 { top:-180px; left:-120px; width:520px; height:520px; background:rgba(0,255,200,0.12); }
+    .g2 { bottom:-140px; right:-80px; width:440px; height:440px; background:rgba(255,170,0,0.09); }
+    .line { position:absolute; left:80px; right:80px; height:1px; z-index:1; }
+    .ln-t { top:50px; background:linear-gradient(90deg,transparent,rgba(0,255,200,0.25),transparent); }
+    .ln-b { bottom:50px; background:linear-gradient(90deg,transparent,rgba(255,170,0,0.18),transparent); }
+    .c { position:relative; z-index:2; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; padding:70px 130px; gap:8px; }
+    .badge { font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:700; letter-spacing:.3em; color:#00FFC8; border:1px solid rgba(0,255,200,0.35); padding:4px 16px; width:fit-content; }
+    .name { font-family:'Space Grotesk',sans-serif; font-size:88px; font-weight:900; letter-spacing:-.04em; line-height:1; background:linear-gradient(135deg,#fff 30%,#00FFC8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .tag { font-size:24px; font-weight:300; color:#94A3B8; max-width:680px; line-height:1.4; }
+    .tag em { color:#FFAA00; font-style:italic; }
+    .term { background:#0A0A0A; border:1px solid rgba(0,255,200,0.15); width:fit-content; margin-top:10px; }
+    .dots { padding:7px 12px; border-bottom:1px solid rgba(255,255,255,0.04); display:flex; gap:5px; }
+    .dots i { display:block; width:9px; height:9px; border-radius:50%; }
+    .dots i:nth-child(1) { background:#FF5F57; }
+    .dots i:nth-child(2) { background:#FFAA00; }
+    .dots i:nth-child(3) { background:#27C93F; }
+    .body { padding:14px 22px; font-size:28px; }
+    .p { color:#00FFC8; font-weight:700; }
+    .cmd { color:#FFAA00; font-weight:600; }
+    .cur { color:#00FFC8; }
+    .pills { display:flex; gap:8px; margin-top:6px; }
+    .pl { font-size:14px; color:#64748B; background:rgba(255,255,255,0.03); padding:4px 14px; border:1px solid rgba(255,255,255,0.06); }
+    .pa { color:#FFAA00; border-color:rgba(255,170,0,0.25); }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+    tl.from(".ln-t", { scaleX:0, duration:.3, ease:"expo.out" }, 0.05);
+    tl.from(".badge", { x:-15, opacity:0, duration:.15, ease:"power3.out" }, 0.1);
+    tl.from(".name", { y:25, opacity:0, duration:.3, ease:"expo.out" }, 0.15);
+    tl.from(".tag", { y:10, opacity:0, duration:.2, ease:"power2.out" }, 0.3);
+    tl.from(".term", { x:-10, opacity:0, duration:.15, ease:"power3.out" }, 0.4);
+    tl.to(".cur", { opacity:0, duration:.25, ease:"steps(1)", yoyo:true, repeat:10 }, 0.6);
+    tl.from(".pl", { y:6, opacity:0, duration:.08, ease:"power2.out", stagger:.04 }, 0.55);
+    tl.from(".ln-b", { scaleX:0, duration:.3, ease:"expo.out" }, 0.5);
+    tl.to(".g1", { scale:1.2, duration:3, ease:"sine.inOut", yoyo:true, repeat:1 }, 0.2);
+    tl.to(".g2", { scale:1.15, duration:2.5, ease:"sine.inOut", yoyo:true, repeat:1 }, 0.3);
+    window.__timelines["s1-title"] = tl;
+  </script>
+</div>
+</template>

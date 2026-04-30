@@ -36,11 +36,10 @@ function printHeader() {
 
 function printMenu(selected) {
   const items = [
-    { key: '1', label: 'Quick Scan', desc: 'Scan environment (no AI suggestions)' },
+    { key: '1', label: 'Quick Scan', desc: 'Scan environment — no AI suggestions' },
     { key: '2', label: 'Full Scan', desc: 'Scan + AI skill suggestions (needs API key or GCP project)' },
-    { key: '3', label: 'Scan with Repos', desc: 'Include code repositories in the scan' },
-    { key: '4', label: 'View Report', desc: 'Open the latest scan report' },
-    { key: '5', label: 'View Score', desc: 'Show sophistication score breakdown' },
+    { key: '3', label: 'View Report', desc: 'Open the latest scan report' },
+    { key: '4', label: 'View Score', desc: 'Show sophistication score breakdown' },
     { key: 'q', label: 'Quit', desc: '' },
   ];
 
@@ -116,14 +115,15 @@ function runScanner(args, label) {
 function viewReport() {
   const reportPath = path.join(DEFAULT_OUT, 'gemini-env-report.md');
   if (!fs.existsSync(reportPath)) {
-    console.log(`\n  ${C.yellow}No report found. Run a scan first.${C.reset}`);
-    return;
+    console.log(`\n  ${C.yellow}⚠ No report found. Run a scan first.${C.reset}\n`);
+    return false;
   }
   const content = fs.readFileSync(reportPath, 'utf8');
   const lines = content.split('\n');
 
-  clear();
-  console.log(`  ${C.bold}${C.cyan}📄 Scan Report${C.reset}  ${C.dim}(${lines.length} lines)${C.reset}\n`);
+  console.log(`\n  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
+  console.log(`  ${C.bold}${C.cyan}📄 Scan Report${C.reset}  ${C.dim}(${lines.length} lines)${C.reset}`);
+  console.log(`  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}\n`);
 
   // Colorize markdown
   for (const line of lines) {
@@ -137,27 +137,29 @@ function viewReport() {
     else if (line.includes('❌')) console.log(`  ${C.red}${line}${C.reset}`);
     else console.log(`  ${line}`);
   }
+  return true;
 }
 
 function viewScore() {
   const jsonPath = path.join(DEFAULT_OUT, 'gemini-env-manifest.json');
   if (!fs.existsSync(jsonPath)) {
-    console.log(`\n  ${C.yellow}No manifest found. Run a scan first.${C.reset}`);
-    return;
+    console.log(`\n  ${C.yellow}⚠ No manifest found. Run a scan first.${C.reset}\n`);
+    return false;
   }
   const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
   const score = data.sophistication_score;
-  if (!score) { console.log(`\n  ${C.yellow}No score data in manifest.${C.reset}`); return; }
+  if (!score) { console.log(`\n  ${C.yellow}⚠ No score data in manifest.${C.reset}\n`); return false; }
 
-  clear();
   const pct = Math.round((score.total / score.max) * 100);
   const barLen = 40;
   const filled = Math.round((pct / 100) * barLen);
   const barColor = pct >= 70 ? C.green : pct >= 40 ? C.yellow : C.red;
   const bar = `${barColor}${'█'.repeat(filled)}${C.dim}${'░'.repeat(barLen - filled)}${C.reset}`;
 
-  console.log(`\n  ${C.bold}${C.cyan}📊 Sophistication Score${C.reset}\n`);
-  console.log(`  ${bar}  ${C.bold}${score.total}/${score.max}${C.reset}  ${C.dim}(${pct}%)${C.reset}\n`);
+  console.log(`\n  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
+  console.log(`  ${C.bold}${C.cyan}📊 Sophistication Score${C.reset}`);
+  console.log(`  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
+  console.log(`\n  ${bar}  ${C.bold}${score.total}/${score.max}${C.reset}  ${C.dim}(${pct}%)${C.reset}\n`);
 
   console.log(`  ${C.bold}Breakdown:${C.reset}`);
   console.log(`  ${'─'.repeat(45)}`);
@@ -195,12 +197,23 @@ function viewScore() {
     const models = Object.entries(convos.models_used || {}).sort((a, b) => b[1] - a[1]);
     if (models.length) console.log(`  🧠 Top model:   ${C.bold}${models[0][0]}${C.reset} ${C.dim}(${models[0][1]} turns)${C.reset}`);
   }
+  console.log('');
+  return true;
 }
 
 async function promptRepos(rl) {
   return new Promise((resolve) => {
-    rl.question(`\n  ${C.cyan}Enter repo paths${C.reset} ${C.dim}(space-separated, e.g. ~/Code/proj-a ~/Code/proj-b)${C.reset}\n  > `, (answer) => {
+    rl.question(`\n  ${C.cyan}Include code repos?${C.reset} ${C.dim}(e.g. ~/Code — auto-discovers repos 3 levels deep, Enter to skip)${C.reset}\n  > `, (answer) => {
       resolve(answer.trim().split(/\s+/).filter(Boolean));
+    });
+  });
+}
+
+async function promptChatDays(rl) {
+  return new Promise((resolve) => {
+    rl.question(`\n  ${C.cyan}Filter chat history?${C.reset} ${C.dim}(Enter number of days, or press Enter for all history)${C.reset}\n  > `, (answer) => {
+      const val = answer.trim();
+      resolve(val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : null);
     });
   });
 }
@@ -215,7 +228,7 @@ async function main() {
   }
 
   let selected = 0;
-  const ITEM_COUNT = 6;
+  const ITEM_COUNT = 5;
 
   function render() {
     clear();
@@ -225,43 +238,53 @@ async function main() {
 
   async function handleAction(idx) {
     switch (idx) {
-      case 0: // Quick scan
-        await runScanner(['--skip-suggestions', '--output-dir', DEFAULT_OUT], 'Running quick scan');
+      case 0: { // Quick scan
+        const repos = await promptRepos(rl);
+        const days = await promptChatDays(rl);
+        const args = ['--skip-suggestions', '--output-dir', DEFAULT_OUT];
+        if (repos.length) args.push('--repos', ...repos);
+        if (days) args.push('--chat-days', String(days));
+        const label = repos.length ? `Quick scan + ${repos.length > 1 ? repos.length + ' repo paths' : repos[0]}` : 'Quick scan';
+        await runScanner(args, label);
         break;
+      }
       case 1: { // Full scan
         if (!hasAICredentials()) {
           const set = await promptCredentials(rl);
           if (!set) {
             console.log(`  ${C.dim}Running without AI suggestions.${C.reset}`);
-            await runScanner(['--skip-suggestions', '--output-dir', DEFAULT_OUT], 'Running scan (no AI)');
+            const repos = await promptRepos(rl);
+            const days = await promptChatDays(rl);
+            const args = ['--skip-suggestions', '--output-dir', DEFAULT_OUT];
+            if (repos.length) args.push('--repos', ...repos);
+            if (days) args.push('--chat-days', String(days));
+            await runScanner(args, 'Running scan (no AI)');
             break;
           }
         }
-        await runScanner(['--output-dir', DEFAULT_OUT], 'Running full scan with AI suggestions');
-        break;
-      }
-      case 2: { // Scan with repos
         const repos = await promptRepos(rl);
-        if (repos.length) {
-          await runScanner(['--output-dir', DEFAULT_OUT, '--repos', ...repos], `Scanning ${repos.length} repos`);
-        } else {
-          console.log(`  ${C.yellow}No repos specified.${C.reset}`);
-        }
+        const days = await promptChatDays(rl);
+        const args = ['--output-dir', DEFAULT_OUT];
+        if (repos.length) args.push('--repos', ...repos);
+        if (days) args.push('--chat-days', String(days));
+        const label = repos.length ? `Full scan + ${repos.length > 1 ? repos.length + ' repo paths' : repos[0]}` : 'Full scan';
+        await runScanner(args, label);
         break;
       }
-      case 3: // View report
+      case 2: // View report
         viewReport();
         break;
-      case 4: // View score
+      case 3: // View score
         viewScore();
         break;
-      case 5: // Quit
+      case 4: // Quit
         clear();
         console.log(`  ${C.dim}Goodbye! 👋${C.reset}\n`);
         process.exit(0);
     }
 
-    console.log(`\n  ${C.dim}Press any key to return to menu...${C.reset}`);
+    console.log(`  ${C.dim}${'─'.repeat(50)}${C.reset}`);
+    console.log(`  ${C.dim}Press any key to return to menu...${C.reset}`);
     if (process.stdin.isTTY) process.stdin.setRawMode(true);
     await new Promise((resolve) => {
       process.stdin.once('keypress', resolve);
@@ -286,7 +309,7 @@ async function main() {
         if (process.stdin.isTTY) process.stdin.setRawMode(true);
       }
       else if (str === 'q') { clear(); console.log(`  ${C.dim}Goodbye! 👋${C.reset}\n`); process.exit(0); }
-      else if (str >= '1' && str <= '5') {
+      else if (str >= '1' && str <= '4') {
         selected = parseInt(str) - 1;
         render();
         process.stdin.setRawMode(false);

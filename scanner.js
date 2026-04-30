@@ -16,8 +16,42 @@ const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scan
 const { suggestSkills } = require('./lib/suggest');
 const { computeScore, generateReport } = require('./lib/report');
 
-const VERSION = '3.0.0';
+const VERSION = '3.1.0';
 const GITHUB_REPO = 'pauldatta/gemini-cli-scanner';
+const SKIP_DIRS = new Set(['node_modules', '.git', 'vendor', '__pycache__', 'dist', 'build', '.next', '.venv', 'venv', '.cache', '.npm', '.yarn', 'coverage', '.terraform']);
+
+/**
+ * Discover git repos under given paths. If a path itself has .git, it's a repo.
+ * Otherwise, walk up to maxDepth levels to find child repos.
+ */
+function discoverRepos(paths, maxDepth) {
+  const repos = new Set();
+  for (const rp of paths) {
+    const p = path.resolve(rp.replace(/^~/, process.env.HOME || ''));
+    if (!fs.existsSync(p)) { console.log(`  ⚠ Path not found: ${p}`); continue; }
+    if (!fs.statSync(p).isDirectory()) { console.log(`  ⚠ Not a directory: ${p}`); continue; }
+    if (fs.existsSync(path.join(p, '.git'))) { repos.add(p); continue; }
+    // Walk children looking for .git dirs
+    walkForRepos(p, 0, maxDepth, repos);
+  }
+  return [...repos];
+}
+
+function walkForRepos(dir, depth, maxDepth, repos) {
+  if (depth >= maxDepth) return;
+  let entries;
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+  for (const ent of entries) {
+    if (!ent.isDirectory() || ent.name.startsWith('.') || SKIP_DIRS.has(ent.name)) continue;
+    const child = path.join(dir, ent.name);
+    if (fs.existsSync(path.join(child, '.git'))) {
+      repos.add(child);
+      // Don't recurse into a repo's subdirs — it's already found
+    } else {
+      walkForRepos(child, depth + 1, maxDepth, repos);
+    }
+  }
+}
 
 function checkForUpdates() {
   return new Promise(resolve => {
@@ -57,6 +91,8 @@ async function main() {
       'json-only':          { type: 'boolean', default: false },
       'skip-update-check':  { type: 'boolean', default: false },
       'repos':              { type: 'string', multiple: true, default: [] },
+      'chat-days':          { type: 'string', default: '' },
+      'repo-depth':         { type: 'string', default: '3' },
     },
     allowPositionals: true,
     strict: false,
@@ -67,6 +103,8 @@ async function main() {
   const gdir = values['gemini-dir'];
   const home = values['home-dir'];
   const outdir = values['output-dir'];
+  const chatDays = values['chat-days'] ? parseInt(values['chat-days'], 10) : null;
+  const repoDepth = parseInt(values['repo-depth'] || '3', 10);
   // Support both --repos a b and positional args as repo paths
   const repoPaths = [...(values.repos || []), ...positionals];
 
@@ -84,12 +122,20 @@ async function main() {
   console.log('  → Extensions...');                m.extensions = scanExtensions(gdir);
   console.log('  → Policies...');                  m.policies = scanPolicies(gdir);
   console.log('  → Claude Code (~/.claude)...');   m.claude = scanClaude(home);
-  console.log('  → Conversations...');             m.conversations = scanConversations(gdir);
+  if (chatDays) console.log(`  → Conversations (last ${chatDays} days)...`);
+  else console.log('  → Conversations (all history)...');
+  m.conversations = scanConversations(gdir, { chatDays });
   console.log('  → Project GEMINI.md files...');   m.project_gemini_mds = scanProjectGeminiMds(gdir);
 
   if (repoPaths.length) {
-    console.log(`  → Scanning ${repoPaths.length} code repos...`);
-    m.repos = scanRepos(repoPaths);
+    // Discover repos recursively if a path is a directory without .git
+    const discovered = discoverRepos(repoPaths, repoDepth);
+    console.log(`  → Discovered ${discovered.length} repos:`);
+    for (const rp of discovered) {
+      console.log(`    📁 ${path.basename(rp)}  ${'\x1b[2m'}${rp}${'\x1b[0m'}`);
+    }
+    console.log('  → Scanning repo configs...');
+    m.repos = scanRepos(discovered);
   } else {
     m.repos = [];
   }

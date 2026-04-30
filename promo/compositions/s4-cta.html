@@ -1,0 +1,58 @@
+<template id="s4-cta-template">
+<div id="s4-cta" data-composition-id="s4-cta" data-start="0" data-width="1920" data-height="1080">
+
+  <div class="glow"></div>
+
+  <div class="c">
+    <div class="ti">Try it now</div>
+    <div class="term">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="body"><span class="p">$</span> <span class="cmd">npx gemini-cli-scanner</span></div>
+    </div>
+    <div class="fs">
+      <span class="f">📂 Scans MCP, skills, extensions, agents</span>
+      <span class="f fh">🎯 Auto-generates SKILL.md from patterns</span>
+      <span class="f">💬 Reads conversation JSONL history</span>
+      <span class="f">📊 Scores environment sophistication</span>
+    </div>
+    <div class="tm">Run across your team. Shared patterns → standardize. Unique gems → propagate.</div>
+    <div class="lk"><span class="lp">npm</span> gemini-cli-scanner <span class="sp">·</span> Apache 2.0</div>
+  </div>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap');
+    #s4-cta { background:#000; color:#F1F5F9; font-family:'JetBrains Mono',monospace; overflow:hidden; }
+    .glow { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:600px; height:600px; background:radial-gradient(circle,rgba(0,255,200,0.06),transparent 70%); filter:blur(80px); z-index:0; }
+    .c { position:relative; z-index:2; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:60px 140px; gap:16px; text-align:center; }
+    .ti { font-family:'Space Grotesk',sans-serif; font-size:72px; font-weight:900; letter-spacing:-.03em; background:linear-gradient(135deg,#fff 40%,#00FFC8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .term { background:#0A0A0A; border:1px solid rgba(0,255,200,0.15); }
+    .dots { padding:6px 10px; border-bottom:1px solid rgba(255,255,255,0.03); display:flex; gap:5px; }
+    .dots i { display:block; width:8px; height:8px; border-radius:50%; }
+    .dots i:nth-child(1) { background:#FF5F57; }
+    .dots i:nth-child(2) { background:#FFAA00; }
+    .dots i:nth-child(3) { background:#27C93F; }
+    .body { padding:12px 24px; font-size:30px; }
+    .p { color:#00FFC8; font-weight:700; }
+    .cmd { color:#FFAA00; font-weight:600; }
+    .fs { display:grid; grid-template-columns:1fr 1fr; gap:6px 28px; text-align:left; }
+    .f { font-size:18px; color:#94A3B8; }
+    .fh { color:#FFAA00; font-weight:500; }
+    .tm { font-size:16px; color:#475569; font-style:italic; max-width:550px; }
+    .lk { font-size:15px; color:#475569; }
+    .lp { color:#00FFC8; font-weight:500; background:rgba(0,255,200,0.05); padding:2px 8px; border:1px solid rgba(0,255,200,0.1); }
+    .sp { color:#1E293B; margin:0 4px; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+    tl.from(".ti", { scale:.8, opacity:0, duration:.3, ease:"back.out(1.4)" }, 0.1);
+    tl.from(".term", { y:12, opacity:0, duration:.2, ease:"expo.out" }, 0.3);
+    tl.from(".f", { y:6, opacity:0, duration:.08, ease:"power2.out", stagger:.04 }, 0.5);
+    tl.from(".tm", { opacity:0, y:5, duration:.15, ease:"sine.out" }, 0.8);
+    tl.from(".lk", { opacity:0, duration:.15, ease:"sine.out" }, 1.0);
+    window.__timelines["s4-cta"] = tl;
+  </script>
+</div>
+</template>

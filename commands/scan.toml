@@ -2,4 +2,10 @@ prompt = """Scan my Gemini CLI and Claude Code environment to discover patterns,
 
 Run: `node ${extensionPath}/scanner.js --output-dir ./scan-results {{args}}`
 
+Available flags:
+- `--chat-days N` — limit conversation history to last N days (omit for all history)
+- `--repos ~/Code` — scan repos; auto-discovers git repos recursively (3 levels deep)
+- `--repo-depth N` — override recursive discovery depth (default: 3)
+- `--skip-suggestions` — skip AI-powered skill suggestions
+
 After the scan completes, read `scan-results/gemini-env-report.md` and present me with the key findings."""

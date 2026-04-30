@@ -1,0 +1,158 @@
+<template id="s3-skills-template">
+<div id="s3-skills" data-composition-id="s3-skills" data-start="0" data-width="1920" data-height="1080">
+
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+  <div class="line ln-t"></div>
+  <div class="line ln-b"></div>
+
+  <div class="c">
+    <!-- Phase 1: Hero text + pipeline (0-3s) -->
+    <div class="hero">
+      <div class="hb">THE KEY INSIGHT</div>
+      <div class="hh">Your conversations<br>become skills</div>
+      <div class="hs">The scanner reads <span class="ht">chats/*.jsonl</span> session files — your actual prompts, tool calls, and topics — and detects <span class="ha">repeating workflows</span>. Then it auto-generates <span class="ht">SKILL.md</span> templates. No manual authoring required.</div>
+    </div>
+
+    <div class="pipe">
+      <div class="ps">
+        <div class="pi">💬</div>
+        <div class="pt">Session JSONLs</div>
+        <div class="pd">16 sessions · 26M tokens</div>
+        <div class="pe">Prompts, tools, topics</div>
+      </div>
+      <div class="pa"><svg width="32" height="16" viewBox="0 0 32 16"><path d="M0,8 L24,8 M19,3 L24,8 L19,13" stroke="#00FFC8" stroke-width="2" fill="none"/></svg></div>
+      <div class="ps">
+        <div class="pi">🧠</div>
+        <div class="pt">Pattern Detection</div>
+        <div class="pd">gemini-3.1-flash-lite</div>
+        <div class="pe">Frequency + AI analysis</div>
+      </div>
+      <div class="pa"><svg width="32" height="16" viewBox="0 0 32 16"><path d="M0,8 L24,8 M19,3 L24,8 L19,13" stroke="#FFAA00" stroke-width="2" fill="none"/></svg></div>
+      <div class="ps">
+        <div class="pi">🎯</div>
+        <div class="pt">Auto-Gen Skills</div>
+        <div class="pd">SKILL.md templates</div>
+        <div class="pe">Ready to install</div>
+      </div>
+    </div>
+
+    <!-- Phase 2: Two skill cards side by side (3-7s) -->
+    <div class="cards">
+      <div class="card c1">
+        <div class="ct"><span class="cb">SKILL 1</span><span class="cn">gke-pod-debugger</span></div>
+        <div class="cinner">
+          <div class="cx"><span class="ck">name:</span> gke-pod-debugger</div>
+          <div class="cx"><span class="ck">trigger:</span> CrashLoopBackOff, OOMKilled</div>
+          <div class="cx dim">---</div>
+          <div class="cx"><span class="cg">## Steps</span></div>
+          <div class="cx"><span class="cg">1. kubectl get pods -n $NS</span></div>
+          <div class="cx"><span class="cg">2. kubectl describe pod $POD</span></div>
+          <div class="cx"><span class="cg">3. kubectl logs --previous $POD</span></div>
+          <div class="csig">Detected: <span class="ha">kubectl describe → logs</span> <span class="ht">12× in 4 sessions</span></div>
+        </div>
+      </div>
+      <div class="card c2">
+        <div class="ct"><span class="cb">SKILL 2</span><span class="cn">pr-review-checklist</span></div>
+        <div class="cinner">
+          <div class="cx"><span class="ck">name:</span> pr-review-checklist</div>
+          <div class="cx"><span class="ck">trigger:</span> "review this PR"</div>
+          <div class="cx dim">---</div>
+          <div class="cx"><span class="cg">## Checks</span></div>
+          <div class="cx"><span class="cg">1. Security: no leaked keys</span></div>
+          <div class="cx"><span class="cg">2. Tests: coverage ≥ 80%</span></div>
+          <div class="cx"><span class="cg">3. Style: lint passes</span></div>
+          <div class="csig">Detected: <span class="ha">PR review pattern</span> <span class="ht">9× in 6 sessions</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3: Team insight banner (7-9s) -->
+    <div class="team">
+      <div class="ticon">👥</div>
+      <div class="tcol">
+        <div class="thead">For Teams: Run across 6-7 members</div>
+        <div class="tbody">Same suggestion across multiple developers? <span class="ha">Strong signal</span> — codify it. Unique gem from one developer? <span class="ht">Propagate it</span> to everyone.</div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap');
+    #s3-skills { background:#000; color:#E2E8F0; font-family:'JetBrains Mono',monospace; overflow:hidden; }
+    .glow { position:absolute; border-radius:50%; filter:blur(100px); z-index:0; }
+    .g1 { top:-120px; left:18%; width:600px; height:400px; background:rgba(255,170,0,0.10); }
+    .g2 { bottom:-100px; right:6%; width:420px; height:340px; background:rgba(0,255,200,0.08); }
+    .line { position:absolute; left:60px; right:60px; height:1px; z-index:1; }
+    .ln-t { top:30px; background:linear-gradient(90deg,transparent,rgba(255,170,0,0.25),transparent); }
+    .ln-b { bottom:30px; background:linear-gradient(90deg,transparent,rgba(0,255,200,0.2),transparent); }
+    .c { position:relative; z-index:2; width:100%; height:100%; display:flex; flex-direction:column; padding:44px 80px; gap:10px; box-sizing:border-box; }
+    /* Hero */
+    .hb { font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; letter-spacing:.3em; color:#FFAA00; border:1px solid rgba(255,170,0,0.4); padding:4px 14px; width:fit-content; }
+    .hh { font-family:'Space Grotesk',sans-serif; font-size:64px; font-weight:900; line-height:1.05; letter-spacing:-.03em; background:linear-gradient(135deg,#fff 30%,#FFAA00); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hs { font-size:22px; font-weight:300; color:#CBD5E1; max-width:1100px; line-height:1.5; }
+    .ht { color:#00FFC8; font-weight:600; }
+    .ha { color:#FFAA00; font-weight:600; }
+    /* Pipeline */
+    .pipe { display:flex; align-items:stretch; gap:0; margin-top:4px; }
+    .ps { flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); padding:14px 18px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .pi { font-size:32px; }
+    .pt { font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:700; color:#E2E8F0; }
+    .pd { font-size:16px; color:#94A3B8; }
+    .pe { font-size:14px; color:#64748B; }
+    .pa { display:flex; align-items:center; padding:0 8px; }
+    .pa svg { width:40px; height:20px; }
+    /* Cards */
+    .cards { display:flex; gap:16px; margin-top:6px; }
+    .card { flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,170,0,0.18); border-left:4px solid #FFAA00; }
+    .ct { display:flex; align-items:center; gap:12px; padding:10px 18px; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .cb { font-size:13px; font-weight:700; color:#FFAA00; letter-spacing:.12em; background:rgba(255,170,0,0.12); padding:3px 10px; }
+    .cn { font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#00FFC8; }
+    .cinner { padding:12px 18px; display:flex; flex-direction:column; gap:3px; }
+    .cx { font-size:18px; color:#CBD5E1; }
+    .cx.dim { color:#334155; }
+    .ck { color:#00FFC8; font-weight:600; }
+    .cg { color:#94A3B8; }
+    .csig { margin-top:6px; font-size:16px; color:#94A3B8; border-top:1px solid rgba(255,255,255,0.05); padding-top:6px; }
+    /* Team banner */
+    .team { display:flex; align-items:center; gap:18px; background:rgba(0,255,200,0.04); border:1px solid rgba(0,255,200,0.15); padding:14px 24px; margin-top:6px; }
+    .ticon { font-size:36px; }
+    .tcol { display:flex; flex-direction:column; gap:3px; }
+    .thead { font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:#F1F5F9; }
+    .tbody { font-size:18px; color:#94A3B8; line-height:1.5; }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+    // Phase 1: Hero headline (0-2s) — let viewers read the pitch
+    tl.from(".ln-t", { scaleX:0, duration:.4, ease:"expo.out" }, 0.1);
+    tl.from(".hb", { opacity:0, x:-10, duration:.2, ease:"power3.out" }, 0.15);
+    tl.from(".hh", { y:15, opacity:0, duration:.4, ease:"expo.out" }, 0.25);
+    tl.from(".hs", { y:8, opacity:0, duration:.35, ease:"power2.out" }, 0.7);
+    // Phase 2: Pipeline (2-3.5s)
+    tl.from(".ps:nth-child(1)", { scale:.8, opacity:0, duration:.25, ease:"back.out(1.2)" }, 2.0);
+    tl.from(".pa:nth-child(2)", { opacity:0, x:-6, duration:.15 }, 2.2);
+    tl.from(".ps:nth-child(3)", { scale:.8, opacity:0, duration:.25, ease:"back.out(1.2)" }, 2.35);
+    tl.from(".pa:nth-child(4)", { opacity:0, x:-6, duration:.15 }, 2.55);
+    tl.from(".ps:nth-child(5)", { scale:.8, opacity:0, duration:.25, ease:"back.out(1.2)" }, 2.7);
+    // Phase 3: Skill cards (3.5-6s) — generous stagger so code is readable
+    tl.from(".c1", { y:12, opacity:0, duration:.4, ease:"expo.out" }, 3.5);
+    tl.from(".c1 .cx", { opacity:0, x:-4, duration:.08, ease:"power2.out", stagger:.06 }, 3.8);
+    tl.from(".c1 .csig", { opacity:0, y:4, duration:.2, ease:"sine.out" }, 4.4);
+    tl.from(".c2", { y:12, opacity:0, duration:.4, ease:"expo.out" }, 4.8);
+    tl.from(".c2 .cx", { opacity:0, x:-4, duration:.08, ease:"power2.out", stagger:.06 }, 5.1);
+    tl.from(".c2 .csig", { opacity:0, y:4, duration:.2, ease:"sine.out" }, 5.7);
+    // Phase 4: Team banner (6.5-7.5s) — 2.5s of static reading after this
+    tl.from(".team", { y:10, opacity:0, duration:.3, ease:"expo.out" }, 6.5);
+    tl.from(".ticon", { scale:0, duration:.25, ease:"back.out(1.5)" }, 6.65);
+    tl.from(".tcol", { x:10, opacity:0, duration:.25, ease:"power2.out" }, 6.8);
+    tl.from(".ln-b", { scaleX:0, duration:.3, ease:"expo.out" }, 6.4);
+    // Ambient glow breathing
+    tl.to(".g1", { scale:1.15, duration:8, ease:"sine.inOut", yoyo:true, repeat:1 }, 0.2);
+    tl.to(".g2", { scale:1.1, duration:7, ease:"sine.inOut", yoyo:true, repeat:1 }, 0.3);
+    window.__timelines["s3-skills"] = tl;
+  </script>
+</div>
+</template>

@@ -1,5 +1,14 @@
-prompt = """Scan my Gemini CLI and Claude Code environment along with the code repos under {{args}} to discover project-level patterns, MCP servers, skills, and agents.
+prompt = """Scan my Gemini CLI and Claude Code environment along with code repos to discover project-level patterns, MCP servers, skills, and agents.
 
 Run: `node ${extensionPath}/scanner.js --output-dir ./scan-results --repos {{args}}`
+
+The --repos flag auto-discovers git repos recursively (3 levels deep). You can pass:
+- A parent directory: `--repos ~/Code` (discovers all repos under it)
+- Multiple paths: `--repos ~/Code/proj-a ~/Code/proj-b`
+- Override depth: `--repo-depth 4`
+
+Other flags:
+- `--chat-days N` — limit conversation history to last N days (omit for all history)
+- `--skip-suggestions` — skip AI-powered skill suggestions
 
 After the scan completes, read `scan-results/gemini-env-report.md` and present me with the key findings, focusing on cross-project patterns and suggested skills."""

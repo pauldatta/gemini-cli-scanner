@@ -11,16 +11,21 @@ npx gemini-cli-scanner
 ```
 
 This launches an interactive TUI with:
-- **Quick Scan** — environment-only, no API key needed
-- **Full Scan** — with AI-powered skill suggestions
-- **Scan with Repos** — include code repositories
+- **Quick Scan** — environment scan, optional repo discovery, no API key needed
+- **Full Scan** — everything + AI-powered skill suggestions from your conversation patterns
 - **View Report** — colorized markdown in your terminal
-- **View Score** — visual score breakdown with progress bars
+- **View Score** — visual sophistication score breakdown with progress bars
+
+Both scan types prompt for:
+- **Code repo paths** — e.g. `~/Code` to auto-discover all git repos (3 levels deep)
+- **Chat history filter** — e.g. `30` for last 30 days, or Enter for all history
 
 ### Headless mode (CI, scripts, piping)
 
 ```bash
 npx gemini-cli-scanner --skip-suggestions
+npx gemini-cli-scanner --repos ~/Code --chat-days 30
+npx gemini-cli-scanner --repos ~/Code --repo-depth 4 --skip-suggestions
 ```
 
 > Pass `--` before flags if npx intercepts them: `npx gemini-cli-scanner -- --skip-suggestions`
@@ -38,7 +43,7 @@ gemini extensions install https://github.com/pauldatta/gemini-cli-scanner
 Then use natural language or slash commands:
 - *"Scan my environment"* — triggers the `env-scanner` skill
 - `/scan` — runs a full scan and reads the report
-- `/scan-repos ~/Code/project-a ~/Code/project-b` — scans repos too
+- `/scan-repos ~/Code` — auto-discovers and scans all repos under ~/Code
 
 ## What This Does
 
@@ -46,10 +51,11 @@ This scanner reads your `~/.gemini/`, `~/.claude/`, and any code repos you point
 
 1. **Catalog** your MCP servers, skills, extensions, agents, and context files
 2. **Analyze** your conversation history — what tools you use most, what topics you work on, what models you rely on
-3. **Scan code repos** for project-level `.gemini/` and `.claude/` configs — settings.json, skills, agents, GEMINI.md, CLAUDE.md
-4. **Suggest new skills** by feeding your usage patterns to Gemini and identifying repeating workflows that should be automated
-5. **Score** your environment sophistication (0-105) so you know what capabilities you're leaving on the table
-6. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
+3. **Discover repos** recursively under parent directories (up to 3 levels deep by default) — no need to list each repo individually
+4. **Scan code repos** for project-level `.gemini/` and `.claude/` configs — settings.json, skills, agents, GEMINI.md, CLAUDE.md
+5. **Suggest new skills** by feeding your usage patterns to Gemini and identifying repeating workflows that should be automated
+6. **Score** your environment sophistication (0-105) so you know what capabilities you're leaving on the table
+7. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
 
 ## Configure (optional — for AI skill suggestions)
 
@@ -65,6 +71,8 @@ export GOOGLE_API_KEY="your-key"
 
 Without either variable, the scanner still runs — it just skips the AI suggestion step.
 
+The suggestion engine uses a model fallback chain (`gemini-3.1-flash-lite-preview` → `gemini-3.1-pro-preview` → `gemini-3-flash-preview`) so it works even if newer models aren't available in your region yet.
+
 ## CLI Options
 
 ```
@@ -74,10 +82,30 @@ npx gemini-cli-scanner [OPTIONS]
 --gemini-dir PATH     Path to .gemini dir (default: ~/.gemini)
 --home-dir PATH       Home directory for Claude scanning (default: ~)
 --output-dir PATH     Output directory (default: ./scan-results)
---repos PATH [PATH..] Code repo paths to scan for project-level configs
+--repos PATH [PATH..] Code repo paths or parent directories to scan
+                      Parent dirs are auto-discovered recursively for git repos
+--repo-depth N        Max depth for recursive repo discovery (default: 3)
+--chat-days N         Only include conversation data from the last N days
+                      Omit for all history
 --skip-suggestions    Skip AI skill suggestion (no API key needed)
 --json-only           Output JSON only, no markdown report
 --skip-update-check   Don't check GitHub for newer versions
+```
+
+### Examples
+
+```bash
+# Quick scan, no AI, all history
+npx gemini-cli-scanner --skip-suggestions
+
+# Full scan with repos, last 30 days of chat history
+npx gemini-cli-scanner --repos ~/Code --chat-days 30
+
+# Deep repo discovery (4 levels), JSON only
+npx gemini-cli-scanner --repos ~/Code --repo-depth 4 --json-only
+
+# Scan specific repos
+npx gemini-cli-scanner --repos ~/Code/project-a ~/Code/project-b
 ```
 
 ## Developer Install
@@ -94,7 +122,7 @@ node tui.js
 # Headless
 node scanner.js --skip-suggestions
 
-# Run tests
+# Run tests (66 tests)
 make test
 
 # Install as Gemini CLI extension from local clone
@@ -115,6 +143,14 @@ gemini extensions install .
 | `~/.claude/skills/` | Claude Code skill catalog |
 | `~/.claude/CLAUDE.md` | Claude context files |
 | **`--repos` paths** | Project-level `.gemini/settings.json`, skills, agents, `GEMINI.md`, `.claude/` configs |
+
+### Recursive Repo Discovery
+
+When you pass a parent directory like `~/Code` to `--repos`, the scanner walks up to 3 levels deep (configurable via `--repo-depth`) looking for directories containing `.git/`. It automatically skips noise directories:
+
+`node_modules`, `.git`, `vendor`, `__pycache__`, `dist`, `build`, `.next`, `.venv`, `venv`, `.cache`, `.npm`, `.yarn`, `coverage`, `.terraform`
+
+Each discovered repo is logged during scanning so you can see exactly what's being processed.
 
 ## Output
 
