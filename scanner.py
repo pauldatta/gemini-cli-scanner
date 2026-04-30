@@ -18,7 +18,7 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 GITHUB_REPO = "pauldatta/gemini-cli-scanner"
 
 # ---------------------------------------------------------------------------
@@ -263,6 +263,84 @@ def scan_project_gemini_mds(gdir: Path) -> list:
                                 "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE)})
     return results
 
+def scan_repos(repo_paths: list) -> list:
+    """Scan user-specified code repos for project-level .gemini/ and .claude/ configs."""
+    results = []
+    for rp in repo_paths:
+        p = Path(rp).expanduser().resolve()
+        if not p.exists():
+            print(f"  ⚠ Repo path not found: {p}"); continue
+        repo = {"path": str(p), "name": p.name}
+
+        # GEMINI.md at root
+        gmd = p / "GEMINI.md"
+        if gmd.exists():
+            c = gmd.read_text()
+            repo["gemini_md"] = {"word_count": len(c.split()),
+                                 "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE)}
+
+        # CLAUDE.md at root
+        cmd = p / "CLAUDE.md"
+        if cmd.exists():
+            c = cmd.read_text()
+            repo["claude_md"] = {"word_count": len(c.split()),
+                                 "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE)}
+
+        # .gemini/ project config
+        gdir = p / ".gemini"
+        if gdir.exists():
+            gcfg = {}
+            # settings.json
+            sj = gdir / "settings.json"
+            if sj.exists():
+                try:
+                    raw = json.loads(sj.read_text())
+                    gcfg["settings"] = redact_dict(raw)
+                except: pass
+            # Skills
+            sk = gdir / "skills"
+            if sk.exists():
+                gcfg["skills"] = []
+                for d in sk.iterdir():
+                    if d.is_dir() and (d / "SKILL.md").exists():
+                        content = (d / "SKILL.md").read_text()
+                        info = {"name": d.name}
+                        fm = re.match(r'^---\s*\n(.+?)\n---', content, re.DOTALL)
+                        if fm:
+                            for line in fm.group(1).split('\n'):
+                                if ':' in line:
+                                    k, v = line.split(':', 1)
+                                    info[k.strip()] = v.strip()
+                        gcfg["skills"].append(info)
+            # Agents
+            ag = gdir / "agents"
+            if ag.exists():
+                gcfg["agents"] = [f.stem for f in ag.glob("*.md")]
+            # Nested GEMINI.md
+            for nested in gdir.rglob("GEMINI.md"):
+                c = nested.read_text()
+                gcfg.setdefault("context_files", []).append({
+                    "path": str(nested.relative_to(p)),
+                    "word_count": len(c.split()),
+                    "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE),
+                })
+            repo["gemini_config"] = gcfg
+
+        # .claude/ project config
+        cdir = p / ".claude"
+        if cdir.exists():
+            ccfg = {}
+            for cf in cdir.glob("*.md"):
+                c = cf.read_text()
+                ccfg.setdefault("context_files", []).append({
+                    "name": cf.name, "word_count": len(c.split()),
+                    "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE),
+                })
+            repo["claude_config"] = ccfg
+
+        results.append(repo)
+    return results
+
 # ---------------------------------------------------------------------------
 # Sophistication score
 # ---------------------------------------------------------------------------
@@ -443,6 +521,28 @@ def generate_report(m: dict) -> str:
             if tmpl:
                 L.append(f"```markdown\n{tmpl}\n```\n")
 
+    # Repo configs
+    repos = m.get("repos", [])
+    if repos:
+        L.append(f"\n## Code Repositories ({len(repos)})\n")
+        for r in repos:
+            L.append(f"### 📁 {r['name']}\n")
+            L.append(f"`{r['path']}`\n")
+            if "gemini_md" in r:
+                L.append(f"- **GEMINI.md** — {r['gemini_md']['word_count']} words, sections: {', '.join(r['gemini_md'].get('sections',[]))}")
+            if "claude_md" in r:
+                L.append(f"- **CLAUDE.md** — {r['claude_md']['word_count']} words")
+            gc = r.get("gemini_config", {})
+            if gc:
+                if "settings" in gc:
+                    mcp = gc["settings"].get("mcpServers", {})
+                    if mcp: L.append(f"- **Project MCP servers:** {', '.join(mcp.keys())}")
+                if "skills" in gc:
+                    L.append(f"- **Project skills:** {', '.join(s['name'] for s in gc['skills'])}")
+                if "agents" in gc:
+                    L.append(f"- **Project agents:** {', '.join(gc['agents'])}")
+            L.append("")
+
     L.append("\n---\n*Generated by gemini-cli-scanner. Review before sharing.*")
     return "\n".join(L)
 
@@ -476,6 +576,7 @@ def main():
     parser.add_argument("--skip-suggestions", action="store_true", help="Skip Gemini API skill suggestions")
     parser.add_argument("--json-only", action="store_true")
     parser.add_argument("--skip-update-check", action="store_true", help="Don't check GitHub for updates")
+    parser.add_argument("--repos", nargs="+", metavar="PATH", help="Paths to code repos to scan for project-level configs")
     args = parser.parse_args()
 
     gdir = Path(args.gemini_dir)
@@ -500,6 +601,11 @@ def main():
     print("  → Claude Code (~/.claude)...");m["claude"] = scan_claude(home)
     print("  → Conversations...");          m["conversations"] = scan_conversations(gdir)
     print("  → Project GEMINI.md files..."); m["project_gemini_mds"] = scan_project_gemini_mds(gdir)
+
+    if args.repos:
+        print(f"  → Scanning {len(args.repos)} code repos..."); m["repos"] = scan_repos(args.repos)
+    else:
+        m["repos"] = []
 
     m["sophistication_score"] = compute_score(m)
 
