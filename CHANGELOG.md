@@ -2,6 +2,34 @@
 
 All notable changes to gemini-cli-scanner will be documented in this file.
 
+## [3.2.0] - 2026-04-30
+
+### Added
+- Multi-tool AI ecosystem scanning: Antigravity, Continue, Windsurf, JetBrains AI, Claude Code
+- Cross-tool skill overlap analysis
+- Two-stage AI skill pipeline: `gemini-3.1-flash-lite-preview` for pattern identification, `gemini-3.1-pro-preview` for parallel skill generation
+- In-place TUI progress bar for parallel skill writes
+- Auto-detect report viewer cascade: glow → bat → built-in pager
+- Skill quality standards: Gotchas sections, Validation loops, procedural documentation per [agentskills.io](https://agentskills.io)
+- `docs/skill-identification.md` — full methodology documentation
+- 118 tests across 7 test files (scanners, features, ecosystem, pipeline, report, redact, TUI)
+- GitHub Actions CI: test suite on Node 18/20/22 for pushes and PRs
+- GitHub Actions Release: auto-creates GitHub Release on `v*` tag push
+- README badges: test status, latest release, npm version, Node.js, license
+- Apache 2.0 `LICENSE` file
+
+### Changed
+- Sophistication score max raised to 115 (ecosystem bonus)
+
+## [3.1.0] - 2026-04-30
+
+### Added
+- Recursive repo discovery under parent directories (up to 3 levels deep, configurable via `--repo-depth`)
+- `--chat-days N` flag to filter conversation history to last N days
+- Model fallback chain for skill suggestions (region-aware)
+- TUI credential prompt and arrow-key navigation fix
+- 47 tests
+
 ## [3.0.0] - 2026-04-30
 
 ### Changed
