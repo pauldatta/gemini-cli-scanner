@@ -384,10 +384,30 @@
     }
 
     // Show sidebar only when scrolled past landing
+    const landing = document.getElementById('landing');
     const observer = new IntersectionObserver(([entry]) => {
       document.body.classList.toggle('on-landing', entry.isIntersecting);
     }, { threshold: 0.15 });
-    observer.observe(document.getElementById('landing'));
+    observer.observe(landing);
+
+    // Scroll past landing when any doc link is clicked
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#/"]');
+      if (link) {
+        setTimeout(() => {
+          const docsEl = document.getElementById('app');
+          if (docsEl) docsEl.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    });
+
+    // If page loads with a hash route, scroll past landing
+    if (window.location.hash && window.location.hash !== '#/') {
+      setTimeout(() => {
+        const docsEl = document.getElementById('app');
+        if (docsEl) docsEl.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    }
 
     window.$docsify = {
       name: '🔍 gemini-cli-scanner',
