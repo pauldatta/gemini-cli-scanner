@@ -112,16 +112,43 @@ function runScanner(args, label) {
   });
 }
 
+function whichCmd(cmd) {
+  try { return execSync(`which ${cmd} 2>/dev/null`, { encoding: 'utf8' }).trim(); }
+  catch { return null; }
+}
+
 function viewReport() {
   const reportPath = path.join(DEFAULT_OUT, 'gemini-env-report.md');
   if (!fs.existsSync(reportPath)) {
     console.log(`\n  ${C.yellow}⚠ No report found. Run a scan first.${C.reset}\n`);
     return false;
   }
+
+  // Try glow first (best markdown rendering)
+  if (whichCmd('glow')) {
+    try {
+      execSync(`glow -p "${reportPath}"`, { stdio: 'inherit' });
+      return true;
+    } catch { /* fall through */ }
+  }
+
+  // Try bat (good syntax highlighting)
+  if (whichCmd('bat')) {
+    try {
+      execSync(`bat --language=md --style=plain --paging=always "${reportPath}"`, { stdio: 'inherit' });
+      return true;
+    } catch { /* fall through */ }
+  }
+
+  // Built-in fallback with install hint
+  console.log(`\n  ${C.dim}💡 Install glow or bat for a better reading experience:${C.reset}`);
+  console.log(`  ${C.dim}   brew install glow    ${C.reset}${C.cyan}# rich markdown rendering with tables & colors${C.reset}`);
+  console.log(`  ${C.dim}   brew install bat     ${C.reset}${C.cyan}# syntax-highlighted pager${C.reset}\n`);
+
   const content = fs.readFileSync(reportPath, 'utf8');
   const lines = content.split('\n');
 
-  console.log(`\n  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
+  console.log(`  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
   console.log(`  ${C.bold}${C.cyan}📄 Scan Report${C.reset}  ${C.dim}(${lines.length} lines)${C.reset}`);
   console.log(`  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}\n`);
 
