@@ -13,9 +13,13 @@ import json
 import os
 import re
 import sys
+import urllib.request
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
+
+__version__ = "2.1.0"
+GITHUB_REPO = "pauldatta/gemini-cli-scanner"
 
 # ---------------------------------------------------------------------------
 # Redaction helpers
@@ -284,23 +288,10 @@ def compute_score(m: dict) -> dict:
 # ---------------------------------------------------------------------------
 def suggest_skills(manifest: dict, api_key: str = None, project: str = None) -> list:
     """Use Gemini to analyze conversation patterns and suggest skill creation."""
-    try:
-        import google.generativeai as genai
-    except ImportError:
-        print("  ⚠ google-generativeai not installed, skipping skill suggestions")
-        return []
 
-    if api_key:
-        genai.configure(api_key=api_key)
-    elif project:
-        genai.configure()  # Uses ADC
-    else:
-        print("  ⚠ No API key or project set, skipping skill suggestions")
-        return []
-
-    # Build a summary of conversation patterns for the prompt
+    # Build the prompt from conversation data
     convos = manifest.get("conversations", {})
-    prompts = convos.get("user_prompts", [])[:40]  # Cap to control token cost
+    prompts = convos.get("user_prompts", [])[:40]
     tools = convos.get("tool_usage_top_20", {})
     topics = convos.get("thought_topics_top_15", {})
     existing_skills = [s.get("name","") for s in manifest.get("skills",[])]
@@ -334,19 +325,45 @@ Focus on patterns the user does REPEATEDLY — those are the best candidates for
 
 Return valid JSON array of objects with keys: name, description, rationale, skill_template"""
 
-    try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        response = model.generate_content(prompt_text)
-        text = response.text.strip()
-        # Extract JSON from response
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0]
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0]
-        return json.loads(text)
-    except Exception as e:
-        print(f"  ⚠ Skill suggestion failed: {e}")
-        return []
+    # Try Vertex AI with ADC first (works with gcloud auth)
+    if project or os.environ.get("GOOGLE_CLOUD_PROJECT"):
+        proj = project or os.environ.get("GOOGLE_CLOUD_PROJECT")
+        try:
+            import google.auth
+            import google.auth.transport.requests
+            import requests as req_lib
+            creds, _ = google.auth.default()
+            creds.refresh(google.auth.transport.requests.Request())
+            url = f"https://us-central1-aiplatform.googleapis.com/v1/projects/{proj}/locations/us-central1/publishers/google/models/gemini-2.0-flash:generateContent"
+            headers = {"Authorization": f"Bearer {creds.token}", "Content-Type": "application/json"}
+            body = {"contents": [{"role": "user", "parts": [{"text": prompt_text}]}],
+                    "generationConfig": {"temperature": 0.7, "maxOutputTokens": 4096}}
+            resp = req_lib.post(url, headers=headers, json=body, timeout=60)
+            resp.raise_for_status()
+            text = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+            if "```json" in text: text = text.split("```json")[1].split("```")[0]
+            elif "```" in text: text = text.split("```")[1].split("```")[0]
+            return json.loads(text)
+        except Exception as e:
+            print(f"  ⚠ Vertex AI failed ({e}), trying API key fallback...")
+
+    # Fallback: google-generativeai with API key
+    if api_key:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content(prompt_text)
+            text = response.text.strip()
+            if "```json" in text: text = text.split("```json")[1].split("```")[0]
+            elif "```" in text: text = text.split("```")[1].split("```")[0]
+            return json.loads(text)
+        except Exception as e:
+            print(f"  ⚠ API key fallback failed: {e}")
+            return []
+
+    print("  ⚠ No API key or project set, skipping skill suggestions")
+    return []
 
 # ---------------------------------------------------------------------------
 # Markdown report generator
@@ -432,13 +449,33 @@ def generate_report(m: dict) -> str:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+def check_for_updates():
+    """Check GitHub for a newer version and print update message."""
+    try:
+        url = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+        req = urllib.request.Request(url, headers={"Accept": "application/vnd.github.v3+json"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read())
+            latest = data.get("tag_name", "").lstrip("v")
+            if latest and latest != __version__:
+                body = data.get("body", "").split("\n")[0]  # First line of release notes
+                print(f"\n📦 Update available: v{__version__} → v{latest}")
+                if body:
+                    print(f"   {body}")
+                print(f"   Run: cd {os.path.dirname(os.path.abspath(__file__))} && git pull\n")
+    except Exception:
+        pass  # Silently ignore — network may be unavailable
+
+
 def main():
     parser = argparse.ArgumentParser(description="Scan Gemini CLI & Claude Code environments.")
+    parser.add_argument("--version", action="version", version=f"gemini-cli-scanner v{__version__}")
     parser.add_argument("--gemini-dir", default=os.path.expanduser("~/.gemini"))
     parser.add_argument("--home-dir", default=os.path.expanduser("~"))
     parser.add_argument("--output-dir", default="./scan-results")
     parser.add_argument("--skip-suggestions", action="store_true", help="Skip Gemini API skill suggestions")
     parser.add_argument("--json-only", action="store_true")
+    parser.add_argument("--skip-update-check", action="store_true", help="Don't check GitHub for updates")
     args = parser.parse_args()
 
     gdir = Path(args.gemini_dir)
@@ -449,7 +486,10 @@ def main():
         print(f"Error: {gdir} not found", file=sys.stderr); sys.exit(1)
 
     print(f"🔍 Scanning {gdir}...")
-    m = {"scan_timestamp": datetime.now().isoformat(), "gemini_dir": str(gdir), "version": "2.0.0"}
+    if not args.skip_update_check:
+        check_for_updates()
+
+    m = {"scan_timestamp": datetime.now().isoformat(), "gemini_dir": str(gdir), "scanner_version": __version__}
 
     print("  → Settings & MCP servers..."); m["settings"] = scan_settings(gdir)
     print("  → Global GEMINI.md...");       m["global_gemini_md"] = scan_gemini_md(gdir)
