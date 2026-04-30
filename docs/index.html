@@ -401,13 +401,8 @@
       }
     });
 
-    // If page loads with a hash route, scroll past landing
-    if (window.location.hash && window.location.hash !== '#/') {
-      setTimeout(() => {
-        const docsEl = document.getElementById('app');
-        if (docsEl) docsEl.scrollIntoView({ behavior: 'smooth' });
-      }, 500);
-    }
+    // Track whether this is a deep-link load (not root)
+    const isDeepLink = window.location.hash && window.location.hash !== '#/' && window.location.hash !== '#';
 
     window.$docsify = {
       name: '🔍 gemini-cli-scanner',
@@ -430,6 +425,21 @@
         buttonText: 'Copy',
         successText: 'Copied',
       },
+      plugins: [
+        function scrollPastLanding(hook) {
+          let firstRender = true;
+          hook.doneEach(function () {
+            // On first render with a deep-link hash, scroll past landing
+            if (firstRender && isDeepLink) {
+              firstRender = false;
+              const docsEl = document.getElementById('app');
+              if (docsEl) docsEl.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+          // Also handle in-app route changes (sidebar clicks while on landing)
+          hook.afterEach(function (html) { return html; });
+        },
+      ],
     };
   </script>
   <!-- Docsify core -->
