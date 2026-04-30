@@ -20,13 +20,13 @@ The scanner lives in the extension directory. Run it with:
 
 ```bash
 # Full scan with AI skill suggestions (requires GOOGLE_API_KEY or GOOGLE_CLOUD_PROJECT)
-python3 ${extensionPath}/scanner.py --output-dir ./scan-results
+node ${extensionPath}/scanner.js --output-dir ./scan-results
 
 # Scan without AI suggestions
-python3 ${extensionPath}/scanner.py --output-dir ./scan-results --skip-suggestions
+node ${extensionPath}/scanner.js --output-dir ./scan-results --skip-suggestions
 
 # Include code repos
-python3 ${extensionPath}/scanner.py --output-dir ./scan-results --repos ~/Code/project-a ~/Code/project-b
+node ${extensionPath}/scanner.js --output-dir ./scan-results --repos ~/Code/project-a ~/Code/project-b
 ```
 
 ## Output Files

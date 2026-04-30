@@ -2,6 +2,24 @@
 
 All notable changes to gemini-cli-scanner will be documented in this file.
 
+## [3.0.0] - 2026-04-30
+
+### Changed
+- **BREAKING:** Rewritten from Python to Node.js — zero external dependencies
+- Install is now truly one command: `gemini extensions install <url>` (no pip, no venv)
+- Gemini API skill suggestions use native `https` + `gcloud auth print-access-token` for Vertex AI ADC
+- API key auth uses Gemini REST API directly via `fetch` (no google-generativeai SDK)
+- Replaced `Makefile` with `package.json` scripts
+- Removed `requirements.txt`, Python venv support
+
+### Added
+- `package.json` with npm scripts (`npm run scan`, `npm run scan:no-ai`, etc.)
+- Modular source: `lib/scanners.js`, `lib/suggest.js`, `lib/report.js`, `lib/redact.js`
+
+### Fixed
+- README install instructions now match official `gemini extensions install` workflow
+- Extension auto-enables on install (removed incorrect `gemini extensions enable` step)
+
 ## [2.3.0] - 2026-04-30
 
 ### Added
@@ -21,22 +39,10 @@ All notable changes to gemini-cli-scanner will be documented in this file.
 - Auto-update check against GitHub releases on every scan
 - `--version` flag to print current version
 - `--skip-update-check` flag for offline/CI usage
-- CHANGELOG.md for tracking release notes
 
 ### Changed
 - Version tracking now embedded in JSON manifest as `scanner_version`
 - Sophistication score max raised to 105 (repos bonus)
-
-## [2.1.0] - 2026-04-30
-
-### Added
-- Auto-update check against GitHub releases on every scan
-- `--version` flag to print current version
-- `--skip-update-check` flag for offline/CI usage
-- CHANGELOG.md for tracking release notes
-
-### Changed
-- Version tracking now embedded in JSON manifest as `scanner_version`
 
 ## [2.0.0] - 2026-04-30
 
@@ -45,8 +51,6 @@ All notable changes to gemini-cli-scanner will be documented in this file.
 - Custom agents scanning from `.gemini/agents/` and extension agents
 - AI-powered skill suggestions via Gemini API (Vertex AI + API key auth)
 - Sophistication score includes Claude skills bonus
-- Makefile for easy execution (`make scan`, `make scan-no-ai`)
-- Sample report (`SAMPLE_REPORT.md`)
 
 ### Changed
 - Restructured as standalone repo with its own git history

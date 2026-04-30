@@ -1,14 +1,8 @@
 # Scan results (user-specific, never commit)
 scan-results/
 
-# Python
-venv/
-__pycache__/
-*.pyc
-*.egg-info/
-dist/
-build/
-.eggs/
+# Node (node_modules IS committed because gemini extensions install is a file copy — no npm install hook)
+# If you add dependencies, commit node_modules/
 
 # OS
 .DS_Store
@@ -17,3 +11,12 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Legacy Python (safe to remove after migration)
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.eggs/

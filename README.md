@@ -4,33 +4,31 @@ Discover patterns in your Gemini CLI and Claude Code environments. Extract triba
 
 ## Install as Gemini CLI Extension
 
-### Quick Install
-
 ```bash
-# Clone into your Gemini extensions directory
-git clone https://github.com/pauldatta/gemini-cli-scanner.git ~/.gemini/extensions/gemini-cli-scanner
-
-# Install Python dependencies
-cd ~/.gemini/extensions/gemini-cli-scanner && pip install -r requirements.txt
-
-# Enable for all projects
-gemini extensions enable gemini-cli-scanner
-
-# Configure settings (optional — for AI skill suggestions)
-gemini extensions config gemini-cli-scanner
+gemini extensions install https://github.com/pauldatta/gemini-cli-scanner
 ```
+
+That's it. The only dependency (`@google/genai`) is bundled — no manual `npm install` required. Node.js is already present because Gemini CLI requires it.
 
 ### Developer Install (for contributing)
 
 ```bash
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
-cd gemini-cli-scanner && pip install -r requirements.txt
+cd gemini-cli-scanner
 gemini extensions link .
 ```
 
-### What You Get
+### Configure (optional — for AI skill suggestions)
 
-Once installed, the extension provides:
+```bash
+gemini extensions config gemini-cli-scanner
+```
+
+You'll be prompted for:
+- **Google Cloud Project** — for Vertex AI skill suggestions (uses `gcloud auth` ADC)
+- **Google API Key** — alternative to Vertex AI (stored in system keychain)
+
+### What You Get
 
 | Feature | Description |
 |:---|:---|
@@ -58,47 +56,41 @@ This scanner reads your `~/.gemini/`, `~/.claude/`, and any code repos you point
 5. **Score** your environment sophistication (0-105) so you know what capabilities you're leaving on the table
 6. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
 
-The goal: **uncover the patterns hiding in your environment and turn them into portable, reusable skills and tools.**
+## Standalone Usage
 
-## Quick Start
-
-### Option 1: With Gemini API key (includes AI skill suggestions)
+You can also run the scanner directly without installing as an extension:
 
 ```bash
-export GOOGLE_API_KEY="your-api-key"
-make scan
+# Full scan with AI skill suggestions
+GOOGLE_API_KEY="your-key" node scanner.js
+
+# With Vertex AI
+GOOGLE_CLOUD_PROJECT="your-project" node scanner.js
+
+# Without AI suggestions
+node scanner.js --skip-suggestions
+
+# Scan code repos
+node scanner.js --repos ~/Code/project-a ~/Code/project-b
+
+# Custom output directory
+node scanner.js --output-dir ~/Desktop/my-scan
 ```
 
-### Option 2: With Google Cloud / Vertex AI
+### CLI Options
 
-```bash
-export GOOGLE_CLOUD_PROJECT="your-project-id"
-gcloud auth application-default login
-make scan
 ```
+node scanner.js [OPTIONS]
 
-### Option 3: Without API access (scan only, no AI suggestions)
-
-```bash
-make scan-no-ai
+--version, -v         Show version and exit
+--gemini-dir PATH     Path to .gemini dir (default: ~/.gemini)
+--home-dir PATH       Home directory for Claude scanning (default: ~)
+--output-dir PATH     Output directory (default: ./scan-results)
+--repos PATH [PATH..] Code repo paths to scan for project-level configs
+--skip-suggestions    Skip AI skill suggestion (no API key needed)
+--json-only           Output JSON only, no markdown report
+--skip-update-check   Don't check GitHub for newer versions
 ```
-
-### Scanning Code Repos
-
-Include your project directories to scan their `.gemini/` and `.claude/` configs:
-
-```bash
-# Single repo
-make scan REPOS="~/Code/my-project"
-
-# Multiple repos
-make scan REPOS="~/Code/project-a ~/Code/project-b ~/Code/platform"
-
-# All repos under a directory (shell expansion)
-make scan REPOS="$(ls -d ~/Code/*/)"
-```
-
-This extracts project-level MCP servers, skills, agents, and context files — giving visibility into how each codebase is configured for AI tooling.
 
 ## What Gets Scanned
 
@@ -110,10 +102,9 @@ This extracts project-level MCP servers, skills, agents, and context files — g
 | `~/.gemini/extensions/` | Extension catalog with enable/disable status |
 | `~/.gemini/policies/` | Policy TOML configurations |
 | `~/.gemini/GEMINI.md` | Global context file |
-| `~/.gemini/tmp/*/chats/*.jsonl` | **Conversation intelligence**: tool frequency, models, thought topics, user prompts, token consumption |
+| `~/.gemini/tmp/*/chats/*.jsonl` | Conversation intelligence: tool frequency, models, topics, prompts, tokens |
 | `~/.claude/skills/` | Claude Code skill catalog |
 | `~/.claude/CLAUDE.md` | Claude context files |
-| Project `GEMINI.md` files | Per-project context discovered via project roots |
 | **`--repos` paths** | Project-level `.gemini/settings.json`, skills, agents, `GEMINI.md`, `.claude/` configs |
 
 ## Output
@@ -124,21 +115,6 @@ After running, check `scan-results/`:
 - **`gemini-env-report.md`** — Human-readable summary with sophistication score, top tools, suggested skills, and repo configs
 
 **Review the report before sharing.** While credentials are auto-redacted, your conversation prompts and topics are included to enable pattern detection.
-
-## CLI Options
-
-```
-python scanner.py [OPTIONS]
-
---version             Show version and exit
---gemini-dir PATH     Path to .gemini dir (default: ~/.gemini)
---home-dir PATH       Home directory for Claude scanning (default: ~)
---output-dir PATH     Output directory (default: ./scan-results)
---repos PATH [PATH...]  Code repo paths to scan for project-level configs
---skip-suggestions    Skip AI skill suggestion (no API key needed)
---json-only           Output JSON only, no markdown report
---skip-update-check   Don't check GitHub for newer versions
-```
 
 ## Privacy & Redaction
 
@@ -151,41 +127,7 @@ The scanner automatically redacts:
 
 **What it does NOT redact:** user prompts, thought topics, project names. Review the output and remove anything sensitive before sharing.
 
-**What it does NOT touch:** Shell history (`.zsh_history`, `.bash_history`), browser data, or any files outside `~/.gemini/`, `~/.claude/`, and specified `--repos` paths.
-
-## Suggested Skills
-
-When run with API access, the scanner analyzes your conversation history and suggests 3-5 new skills based on repeating patterns. For example:
-
-> **Detected pattern:** You ran `kubectl describe pod` → `kubectl logs` → `gcloud container clusters describe` 12 times across 4 sessions.
->
-> **Suggested skill:** `gke-pod-debugger` — A skill that automates the pod→logs→cluster diagnosis loop for GKE workloads.
-
-Each suggestion includes a ready-to-use `SKILL.md` template you can drop into `~/.gemini/skills/`.
-
-## Versioning & Updates
-
-The scanner checks GitHub for newer versions on each run. If an update is available:
-
-```
-📦 Update available: v2.2.0 → v2.3.0
-   Added: multi-repo batch scanning mode
-   Run: cd /path/to/gemini-cli-scanner && git pull
-```
-
-Use `--skip-update-check` for offline or CI environments.
-
-## Makefile Targets
-
-```
-make help           Show all targets
-make setup          Install dependencies into venv
-make scan           Full scan with AI skill suggestions
-make scan-no-ai     Scan without Gemini API (no key needed)
-make scan-repos     Scan with repo paths (set REPOS="path1 path2")
-make version        Show scanner version
-make clean          Remove scan results and venv
-```
+**What it does NOT touch:** Shell history, browser data, or any files outside `~/.gemini/`, `~/.claude/`, and specified `--repos` paths.
 
 ## For Teams
 

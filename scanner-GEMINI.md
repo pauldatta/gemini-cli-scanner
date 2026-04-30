@@ -24,9 +24,8 @@ The scanner runs locally, auto-redacts credentials, and produces a JSON manifest
 
 ## Requirements
 
-- Python 3.8+
+- Node.js (already installed with Gemini CLI)
 - For AI skill suggestions: `GOOGLE_API_KEY` env var or `GOOGLE_CLOUD_PROJECT` with `gcloud auth application-default login`
-- `google-generativeai` and `requests` packages (installed automatically via `pip install -r requirements.txt`)
 
 ## Privacy
 
