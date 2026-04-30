@@ -78,13 +78,13 @@ jobs:
         id: 'gemini_analysis'
         env:
           GITHUB_TOKEN: '' # Do not pass auth to model — untrusted input
+          GEMINI_CLI_TRUST_WORKSPACE: 'true'
           ISSUE_TITLE: >-
             ${{ github.event_name == 'workflow_dispatch' && steps.get_issue_data.outputs.title || github.event.issue.title }}
           ISSUE_BODY: >-
             ${{ github.event_name == 'workflow_dispatch' && steps.get_issue_data.outputs.body || github.event.issue.body }}
         with:
           gemini_api_key: '${{ secrets.GEMINI_API_KEY }}'
-          trust_workspace: true
           settings: |-
             {
               "maxSessionTurns": 5,
