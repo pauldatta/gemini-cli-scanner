@@ -1,0 +1,5 @@
+prompt = """Scan my Gemini CLI and Claude Code environment to discover patterns, catalog configurations, and suggest reusable skills.
+
+Run: `python3 ${extensionPath}/scanner.py --output-dir ./scan-results {{args}}`
+
+After the scan completes, read `scan-results/gemini-env-report.md` and present me with the key findings."""

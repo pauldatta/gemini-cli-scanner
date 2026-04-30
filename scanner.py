@@ -18,7 +18,7 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 GITHUB_REPO = "pauldatta/gemini-cli-scanner"
 
 # ---------------------------------------------------------------------------

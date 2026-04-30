@@ -4,26 +4,48 @@ Discover patterns in your Gemini CLI and Claude Code environments. Extract triba
 
 ## Install as Gemini CLI Extension
 
-Install the scanner as a Gemini CLI extension so you can use it directly from your AI coding sessions:
+### Quick Install
 
 ```bash
-# Clone the repo into your Gemini extensions directory
+# Clone into your Gemini extensions directory
 git clone https://github.com/pauldatta/gemini-cli-scanner.git ~/.gemini/extensions/gemini-cli-scanner
-
-# Enable it for all projects
-gemini extensions enable gemini-cli-scanner
 
 # Install Python dependencies
 cd ~/.gemini/extensions/gemini-cli-scanner && pip install -r requirements.txt
+
+# Enable for all projects
+gemini extensions enable gemini-cli-scanner
+
+# Configure settings (optional — for AI skill suggestions)
+gemini extensions config gemini-cli-scanner
 ```
 
-Once installed, just ask Gemini:
-- *"Scan my environment"*
-- *"What skills do I have installed?"*
-- *"Suggest new skills based on my usage patterns"*
-- *"Scan my ~/Code repos for AI tool configs"*
+### Developer Install (for contributing)
 
-The extension includes a `skills/env-scanner/SKILL.md` that teaches the agent how to run and interpret the scanner.
+```bash
+git clone https://github.com/pauldatta/gemini-cli-scanner.git
+cd gemini-cli-scanner && pip install -r requirements.txt
+gemini extensions link .
+```
+
+### What You Get
+
+Once installed, the extension provides:
+
+| Feature | Description |
+|:---|:---|
+| **Context file** | `scanner-GEMINI.md` — teaches Gemini how to use the scanner |
+| **Skill** | `env-scanner` — activated when you ask about environment patterns |
+| **`/scan`** | Custom command to run a full scan with one slash command |
+| **`/scan-repos`** | Custom command to scan with repo paths |
+| **Settings** | `Google Cloud Project` and `Google API Key` stored in system keychain |
+
+### Usage
+
+Use natural language or custom commands:
+- *"Scan my environment"* — triggers the `env-scanner` skill
+- `/scan` — runs the scanner and reads the report
+- `/scan-repos ~/Code/project-a ~/Code/project-b` — scans repos too
 
 ## What This Does
 

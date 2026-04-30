@@ -2,6 +2,31 @@
 
 All notable changes to gemini-cli-scanner will be documented in this file.
 
+## [2.3.0] - 2026-04-30
+
+### Added
+- Gemini CLI extension support: `gemini-extension.json`, `scanner-GEMINI.md` context file
+- Custom commands: `/scan` and `/scan-repos` via `commands/` directory
+- Extension settings: `Google Cloud Project` and `Google API Key` (stored in system keychain)
+- Agent skill: `skills/env-scanner/SKILL.md` for natural language invocation
+- Deep repo scanning: extracts GEMINI.md/CLAUDE.md content, MCP server commands+args, skill content, agent frontmatter
+- Repo configs now fed into AI skill suggestion prompt for cross-project pattern detection
+- Rich report: MCP commands, skill descriptions, agent models per repo
+- Developer install path: `gemini extensions link .`
+
+## [2.2.0] - 2026-04-30
+
+### Added
+- `--repos PATH [PATH...]` flag to scan code repo project-level configs
+- Auto-update check against GitHub releases on every scan
+- `--version` flag to print current version
+- `--skip-update-check` flag for offline/CI usage
+- CHANGELOG.md for tracking release notes
+
+### Changed
+- Version tracking now embedded in JSON manifest as `scanner_version`
+- Sophistication score max raised to 105 (repos bonus)
+
 ## [2.1.0] - 2026-04-30
 
 ### Added

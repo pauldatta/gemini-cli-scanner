@@ -1,5 +1,19 @@
 {
   "name": "gemini-cli-scanner",
-  "version": "2.2.0",
-  "contextFileName": "scanner-GEMINI.md"
+  "version": "2.3.0",
+  "contextFileName": "scanner-GEMINI.md",
+  "settings": [
+    {
+      "name": "Google Cloud Project",
+      "description": "GCP project ID for Vertex AI-based skill suggestions. If not set, falls back to GOOGLE_API_KEY.",
+      "envVar": "GOOGLE_CLOUD_PROJECT",
+      "sensitive": false
+    },
+    {
+      "name": "Google API Key",
+      "description": "Gemini API key for AI skill suggestions. Only needed if not using Vertex AI (Google Cloud Project).",
+      "envVar": "GOOGLE_API_KEY",
+      "sensitive": true
+    }
+  ]
 }
