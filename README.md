@@ -2,6 +2,29 @@
 
 Discover patterns in your Gemini CLI and Claude Code environments. Extract tribal knowledge from how you *actually* use AI coding tools and surface it as reusable skills, agents, and best practices.
 
+## Install as Gemini CLI Extension
+
+Install the scanner as a Gemini CLI extension so you can use it directly from your AI coding sessions:
+
+```bash
+# Clone the repo into your Gemini extensions directory
+git clone https://github.com/pauldatta/gemini-cli-scanner.git ~/.gemini/extensions/gemini-cli-scanner
+
+# Enable it for all projects
+gemini extensions enable gemini-cli-scanner
+
+# Install Python dependencies
+cd ~/.gemini/extensions/gemini-cli-scanner && pip install -r requirements.txt
+```
+
+Once installed, just ask Gemini:
+- *"Scan my environment"*
+- *"What skills do I have installed?"*
+- *"Suggest new skills based on my usage patterns"*
+- *"Scan my ~/Code repos for AI tool configs"*
+
+The extension includes a `skills/env-scanner/SKILL.md` that teaches the agent how to run and interpret the scanner.
+
 ## What This Does
 
 This scanner reads your `~/.gemini/`, `~/.claude/`, and any code repos you point it at to:
