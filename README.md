@@ -10,29 +10,34 @@ Run the interactive scanner — no install required:
 npx gemini-cli-scanner
 ```
 
-This launches an interactive TUI with arrow-key navigation, a score dashboard, and a colorized report viewer.
+This launches an interactive TUI with:
+- **Quick Scan** — environment-only, no API key needed
+- **Full Scan** — with AI-powered skill suggestions
+- **Scan with Repos** — include code repositories
+- **View Report** — colorized markdown in your terminal
+- **View Score** — visual score breakdown with progress bars
 
 ### Headless mode (CI, scripts, piping)
 
 ```bash
-node scanner.js --skip-suggestions
+npx gemini-cli-scanner --skip-suggestions
 ```
+
+> Pass `--` before flags if npx intercepts them: `npx gemini-cli-scanner -- --skip-suggestions`
 
 ---
 
 ## Install as Gemini CLI Extension
 
-If you use the Gemini CLI, install as an extension for `/scan` slash commands:
+For `/scan` slash commands inside the Gemini CLI:
 
 ```bash
 gemini extensions install https://github.com/pauldatta/gemini-cli-scanner
 ```
 
-The only dependency (`@google/genai`) is bundled — no manual `npm install` required.
-
 Then use natural language or slash commands:
 - *"Scan my environment"* — triggers the `env-scanner` skill
-- `/scan` — runs the scanner and reads the report
+- `/scan` — runs a full scan and reads the report
 - `/scan-repos ~/Code/project-a ~/Code/project-b` — scans repos too
 
 ## What This Does
@@ -46,19 +51,6 @@ This scanner reads your `~/.gemini/`, `~/.claude/`, and any code repos you point
 5. **Score** your environment sophistication (0-105) so you know what capabilities you're leaving on the table
 6. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
 
-## Developer Install
-
-```bash
-git clone https://github.com/pauldatta/gemini-cli-scanner.git
-cd gemini-cli-scanner
-
-# Install from local clone
-gemini extensions install .
-
-# Or symlink for live-editing (changes reflected without reinstall)
-gemini extensions link .
-```
-
 ## Configure (optional — for AI skill suggestions)
 
 Set one of these environment variables to enable AI-powered skill suggestions:
@@ -71,31 +63,12 @@ export GOOGLE_CLOUD_PROJECT="your-project"
 export GOOGLE_API_KEY="your-key"
 ```
 
-## Standalone Usage (headless)
+Without either variable, the scanner still runs — it just skips the AI suggestion step.
 
-You can also run the scanner directly without installing as an extension:
-
-```bash
-# Full scan with AI skill suggestions
-GOOGLE_API_KEY="your-key" node scanner.js
-
-# With Vertex AI
-GOOGLE_CLOUD_PROJECT="your-project" node scanner.js
-
-# Without AI suggestions
-node scanner.js --skip-suggestions
-
-# Scan code repos
-node scanner.js --repos ~/Code/project-a ~/Code/project-b
-
-# Custom output directory
-node scanner.js --output-dir ~/Desktop/my-scan
-```
-
-### CLI Options
+## CLI Options
 
 ```
-node scanner.js [OPTIONS]
+npx gemini-cli-scanner [OPTIONS]
 
 --version, -v         Show version and exit
 --gemini-dir PATH     Path to .gemini dir (default: ~/.gemini)
@@ -105,6 +78,27 @@ node scanner.js [OPTIONS]
 --skip-suggestions    Skip AI skill suggestion (no API key needed)
 --json-only           Output JSON only, no markdown report
 --skip-update-check   Don't check GitHub for newer versions
+```
+
+## Developer Install
+
+```bash
+git clone https://github.com/pauldatta/gemini-cli-scanner.git
+cd gemini-cli-scanner
+
+# Interactive TUI
+make
+# or
+node tui.js
+
+# Headless
+node scanner.js --skip-suggestions
+
+# Run tests
+make test
+
+# Install as Gemini CLI extension from local clone
+gemini extensions install .
 ```
 
 ## What Gets Scanned
@@ -124,7 +118,7 @@ node scanner.js [OPTIONS]
 
 ## Output
 
-After running, check `scan-results/`:
+After running, check `scan-results/` in your current directory:
 
 - **`gemini-env-manifest.json`** — Full structured data (for aggregation across team members)
 - **`gemini-env-report.md`** — Human-readable summary with sophistication score, top tools, suggested skills, and repo configs
