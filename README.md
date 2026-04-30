@@ -15,6 +15,11 @@ That's it. The only dependency (`@google/genai`) is bundled — no manual `npm i
 ```bash
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
 cd gemini-cli-scanner
+
+# Install from local clone
+gemini extensions install .
+
+# Or symlink for live-editing (changes reflected without reinstall)
 gemini extensions link .
 ```
 
