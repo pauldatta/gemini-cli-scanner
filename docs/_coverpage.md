@@ -1,22 +1,21 @@
-# gemini-cli-scanner
+# gemini-cli-scanner <small>v3.3.1</small>
 
-> Discover patterns in your Gemini CLI and Claude Code environments.
-> Extract tribal knowledge and surface reusable skills, agents, and best practices.
-
-[![npm version](https://img.shields.io/npm/v/gemini-cli-scanner)](https://www.npmjs.com/package/gemini-cli-scanner)
-[![Tests](https://img.shields.io/github/actions/workflow/status/pauldatta/gemini-cli-scanner/test.yml?label=tests)](https://github.com/pauldatta/gemini-cli-scanner/actions)
-[![Node.js](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)](https://nodejs.org)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
+> Your AI coding environment, audited. \
+> Maturity scoring · advisory recommendations · skill generation
 
 <video class="promo-video" controls autoplay loop muted playsinline>
   <source src="_media/promo.mp4" type="video/mp4">
 </video>
 
-[Get Started](#quick-start)
+```bash
+npx gemini-cli-scanner
+```
+
+[📖 Documentation](#/README)
+[⚡ Quick Start](#/quick-start)
 [GitHub](https://github.com/pauldatta/gemini-cli-scanner)
-[npm](https://www.npmjs.com/package/gemini-cli-scanner)
 
 <div class="scroll-hint">
-  <span>Scroll down for documentation</span>
+  <span>Scroll for docs</span>
   <div class="scroll-chevron">⌄</div>
 </div>
