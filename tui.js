@@ -582,12 +582,14 @@ async function manageAuth(rl) {
 
 async function promptRepos(rl) {
   return new Promise((resolve) => {
-    rl.question(`\n  ${C.cyan}Include code repos?${C.reset} ${C.dim}(path e.g. ~/Code, or ${C.reset}n${C.dim} to skip)${C.reset}\n  > `, (answer) => {
+    rl.question(`\n  ${C.cyan}Include code repos?${C.reset} ${C.dim}(paths separated by space or comma, e.g. ~/Code or ~/proj-a, ~/proj-b — ${C.reset}n${C.dim} to skip, ${C.reset}b${C.dim} for menu)${C.reset}\n  > `, (answer) => {
       const val = answer.trim();
-      if (!val || val.toLowerCase() === 'n' || val.toLowerCase() === 'no') {
+      if (val.toLowerCase() === 'b' || val.toLowerCase() === 'back') {
+        resolve('BACK');
+      } else if (!val || val.toLowerCase() === 'n' || val.toLowerCase() === 'no') {
         resolve([]);
       } else {
-        resolve(val.split(/\s+/).filter(Boolean));
+        resolve(val.split(/[\s,]+/).filter(Boolean));
       }
     });
   });
@@ -595,9 +597,13 @@ async function promptRepos(rl) {
 
 async function promptChatDays(rl) {
   return new Promise((resolve) => {
-    rl.question(`\n  ${C.cyan}Filter chat history?${C.reset} ${C.dim}(number of days, or ${C.reset}Enter${C.dim} for all history)${C.reset}\n  > `, (answer) => {
+    rl.question(`\n  ${C.cyan}Filter chat history?${C.reset} ${C.dim}(number of days, or ${C.reset}Enter${C.dim} for all history, ${C.reset}b${C.dim} for menu)${C.reset}\n  > `, (answer) => {
       const val = answer.trim();
-      resolve(val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : null);
+      if (val.toLowerCase() === 'b' || val.toLowerCase() === 'back') {
+        resolve('BACK');
+      } else {
+        resolve(val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : null);
+      }
     });
   });
 }
@@ -624,7 +630,9 @@ async function main() {
     switch (idx) {
       case 0: { // Quick scan
         const repos = await promptRepos(rl);
+        if (repos === 'BACK') { render(); return; }
         const days = await promptChatDays(rl);
+        if (days === 'BACK') { render(); return; }
         const args = ['--skip-suggestions', '--output-dir', DEFAULT_OUT];
         if (repos.length) args.push('--repos', ...repos);
         if (days) args.push('--chat-days', String(days));
@@ -638,7 +646,9 @@ async function main() {
           if (!set) {
             console.log(`  ${C.dim}Running without AI suggestions.${C.reset}`);
             const repos = await promptRepos(rl);
+            if (repos === 'BACK') { render(); return; }
             const days = await promptChatDays(rl);
+            if (days === 'BACK') { render(); return; }
             const args = ['--skip-suggestions', '--output-dir', DEFAULT_OUT];
             if (repos.length) args.push('--repos', ...repos);
             if (days) args.push('--chat-days', String(days));
@@ -647,7 +657,9 @@ async function main() {
           }
         }
         const repos = await promptRepos(rl);
+        if (repos === 'BACK') { render(); return; }
         const days = await promptChatDays(rl);
+        if (days === 'BACK') { render(); return; }
         const args = ['--output-dir', DEFAULT_OUT];
         if (repos.length) args.push('--repos', ...repos);
         if (days) args.push('--chat-days', String(days));
@@ -726,4 +738,4 @@ if (require.main === module) {
 }
 
 // Export internals for testing
-module.exports = { getAuthStatus, hasAICredentials, C, DEFAULT_OUT };
+module.exports = { getAuthStatus, hasAICredentials, C, DEFAULT_OUT, promptRepos, promptChatDays };

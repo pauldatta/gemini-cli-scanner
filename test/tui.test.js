@@ -5,7 +5,14 @@ const assert = require('node:assert/strict');
 // Save original env before importing (tui reads env at call time)
 const origEnv = { ...process.env };
 
-const { getAuthStatus, hasAICredentials, C, DEFAULT_OUT } = require('../tui');
+const { getAuthStatus, hasAICredentials, C, DEFAULT_OUT, promptRepos, promptChatDays } = require('../tui');
+
+// Helper: create a mock readline that auto-answers with the given value
+function mockRL(answer) {
+  return {
+    question: (_prompt, cb) => { cb(answer); },
+  };
+}
 
 describe('hasAICredentials', () => {
   beforeEach(() => {
@@ -97,5 +104,101 @@ describe('TUI constants', () => {
     for (const key of required) {
       assert.ok(C[key], `color ${key} should be defined`);
     }
+  });
+});
+
+// ─── promptRepos tests ───────────────────────────────────────────────
+describe('promptRepos', () => {
+  it('returns BACK when user types "b"', async () => {
+    const result = await promptRepos(mockRL('b'));
+    assert.equal(result, 'BACK');
+  });
+
+  it('returns BACK when user types "back"', async () => {
+    const result = await promptRepos(mockRL('back'));
+    assert.equal(result, 'BACK');
+  });
+
+  it('returns BACK case-insensitively', async () => {
+    const result = await promptRepos(mockRL('BACK'));
+    assert.equal(result, 'BACK');
+  });
+
+  it('returns empty array when user types "n"', async () => {
+    const result = await promptRepos(mockRL('n'));
+    assert.deepEqual(result, []);
+  });
+
+  it('returns empty array when user types "no"', async () => {
+    const result = await promptRepos(mockRL('no'));
+    assert.deepEqual(result, []);
+  });
+
+  it('returns empty array on empty input', async () => {
+    const result = await promptRepos(mockRL(''));
+    assert.deepEqual(result, []);
+  });
+
+  it('returns single path', async () => {
+    const result = await promptRepos(mockRL('~/Code'));
+    assert.deepEqual(result, ['~/Code']);
+  });
+
+  it('splits space-separated paths', async () => {
+    const result = await promptRepos(mockRL('~/proj-a ~/proj-b'));
+    assert.deepEqual(result, ['~/proj-a', '~/proj-b']);
+  });
+
+  it('splits comma-separated paths', async () => {
+    const result = await promptRepos(mockRL('~/proj-a,~/proj-b'));
+    assert.deepEqual(result, ['~/proj-a', '~/proj-b']);
+  });
+
+  it('splits mixed comma+space paths', async () => {
+    const result = await promptRepos(mockRL('~/a, ~/b ~/c'));
+    assert.deepEqual(result, ['~/a', '~/b', '~/c']);
+  });
+
+  it('trims leading/trailing whitespace', async () => {
+    const result = await promptRepos(mockRL('  ~/Code  '));
+    assert.deepEqual(result, ['~/Code']);
+  });
+
+  it('filters out empty segments from multiple commas', async () => {
+    const result = await promptRepos(mockRL('~/a,,~/b'));
+    assert.deepEqual(result, ['~/a', '~/b']);
+  });
+});
+
+// ─── promptChatDays tests ────────────────────────────────────────────
+describe('promptChatDays', () => {
+  it('returns BACK when user types "b"', async () => {
+    const result = await promptChatDays(mockRL('b'));
+    assert.equal(result, 'BACK');
+  });
+
+  it('returns BACK when user types "back"', async () => {
+    const result = await promptChatDays(mockRL('back'));
+    assert.equal(result, 'BACK');
+  });
+
+  it('returns null on empty input (all history)', async () => {
+    const result = await promptChatDays(mockRL(''));
+    assert.equal(result, null);
+  });
+
+  it('returns parsed integer for valid number', async () => {
+    const result = await promptChatDays(mockRL('30'));
+    assert.equal(result, 30);
+  });
+
+  it('returns parsed integer for single digit', async () => {
+    const result = await promptChatDays(mockRL('7'));
+    assert.equal(result, 7);
+  });
+
+  it('returns null for non-numeric input', async () => {
+    const result = await promptChatDays(mockRL('abc'));
+    assert.equal(result, null);
   });
 });

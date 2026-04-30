@@ -2,6 +2,22 @@
 
 All notable changes to gemini-cli-scanner will be documented in this file.
 
+## [3.4.0] - 2026-04-30
+
+### Added
+- **Documentation Site:** Docsify-based GitHub Pages site at [pauldatta.github.io/gemini-cli-scanner](https://pauldatta.github.io/gemini-cli-scanner/) — custom landing page with promo video, "How It Works" cards, and full docs navigation
+- **Back to Menu:** Type `b` or `back` at any scan prompt (repos, chat days) to return to the main menu without starting a scan
+- **Comma-Separated Repos:** TUI now accepts both space-separated and comma-separated repo paths (e.g. `~/proj-a, ~/proj-b`)
+- **TUI Tests:** 18 new tests for `promptRepos` and `promptChatDays` covering BACK navigation, input parsing, delimiter handling, and edge cases
+- **Issue Triage:** Automated GitHub issue labeling via Gemini CLI action (`issue-triage.yml`)
+- **Dependabot:** Enabled for GitHub Actions dependency updates
+
+### Changed
+- README restructured: slim quick-start overview with deep-links to docs site for technical details
+- TUI screenshot added to README hero section
+- Docs: advisory-engine, scanning reference, skill-suggestions, teams usage, quick-start guide
+- 173 tests across 9 test files (up from 155)
+
 ## [3.3.1] - 2026-04-30
 
 ### Added
