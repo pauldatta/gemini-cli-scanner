@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>gemini-cli-scanner — AI Environment Scanner</title>
+  <meta name="description" content="Discover patterns in your Gemini CLI and Claude Code environments. Extract tribal knowledge and surface reusable skills.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
+  <style>
+    :root {
+      --base-background-color: #0d1117;
+      --cover-background-color: #0d1117;
+      --cover-background-image: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+      --cover-heading-color: #58a6ff;
+      --cover-color: #c9d1d9;
+      --cover-button-primary-color: #58a6ff;
+      --cover-blockquote-color: #8b949e;
+      --sidebar-background: #0d1117;
+      --sidebar-nav-link-color--active: #58a6ff;
+      --link-color: #58a6ff;
+      --heading-color: #c9d1d9;
+      --code-inline-background: #161b22;
+      --code-theme-background: #161b22;
+      --blockquote-border-color: #58a6ff;
+    }
+
+    /* Cover page customization */
+    section.cover {
+      min-height: 100vh;
+      background: var(--cover-background-image) !important;
+    }
+    section.cover .cover-main {
+      max-width: 800px;
+    }
+    section.cover h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 50%, #a5d6ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    section.cover blockquote p {
+      font-size: 1.1rem;
+    }
+
+    /* Video styling */
+    .promo-video {
+      width: 100%;
+      max-width: 720px;
+      margin: 1.5rem auto;
+      border-radius: 12px;
+      border: 1px solid #30363d;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+      display: block;
+    }
+
+    /* Badge row */
+    .cover-main p:first-of-type img {
+      margin: 0 4px;
+    }
+
+    /* Sidebar tweaks */
+    .sidebar-nav li a {
+      font-size: 0.95rem;
+    }
+
+    /* Content area */
+    .markdown-section {
+      max-width: 860px;
+    }
+    .markdown-section table {
+      display: table;
+      width: 100%;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      section.cover h1 { font-size: 1.8rem; }
+      .promo-video { border-radius: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: '🔍 gemini-cli-scanner',
+      repo: 'https://github.com/pauldatta/gemini-cli-scanner',
+      coverpage: true,
+      loadSidebar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      search: {
+        placeholder: 'Search docs...',
+        noData: 'No results',
+        depth: 3,
+      },
+      pagination: {
+        previousText: '← Previous',
+        nextText: 'Next →',
+        crossChapter: true,
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        successText: 'Copied',
+      },
+    };
+  </script>
+  <!-- Docsify core -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <!-- Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <!-- Syntax highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-toml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+</body>
+</html>
