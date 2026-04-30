@@ -16,7 +16,7 @@ const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scan
 const { suggestSkills } = require('./lib/suggest');
 const { computeScore, generateReport } = require('./lib/report');
 
-const VERSION = '3.2.0';
+const VERSION = '3.2.1';
 const GITHUB_REPO = 'pauldatta/gemini-cli-scanner';
 const SKIP_DIRS = new Set(['node_modules', '.git', 'vendor', '__pycache__', 'dist', 'build', '.next', '.venv', 'venv', '.cache', '.npm', '.yarn', 'coverage', '.terraform']);
 
@@ -69,7 +69,8 @@ function checkForUpdates() {
             const body = (d.body || '').split('\n')[0];
             console.log(`\n📦 Update available: v${VERSION} → v${latest}`);
             if (body) console.log(`   ${body}`);
-            console.log(`   Run: gemini extensions update gemini-cli-scanner\n`);
+            console.log(`   npx gemini-cli-scanner@latest`);
+            console.log(`   # or: gemini extensions update gemini-cli-scanner\n`);
           }
         } catch {}
         resolve();

@@ -20,15 +20,21 @@ const C = {
 
 const SCANNER = path.join(__dirname, 'scanner.js');
 const DEFAULT_OUT = './scan-results';
+const PKG_VERSION = require('./package.json').version;
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 function clear() { process.stdout.write('\x1b[2J\x1b[H'); }
 
 function printHeader() {
-  console.log(`${C.bold}${C.cyan}`);
-  console.log(`  ╔══════════════════════════════════════════╗`);
-  console.log(`  ║   🔍  Gemini CLI Scanner  v3.0.1        ║`);
-  console.log(`  ╚══════════════════════════════════════════╝${C.reset}`);
+  console.log(`${C.cyan}`);
+  console.log(`   ██████╗ ███████╗███╗   ███╗██╗███╗   ██╗██╗`);
+  console.log(`  ██╔════╝ ██╔════╝████╗ ████║██║████╗  ██║██║`);
+  console.log(`  ██║  ███╗█████╗  ██╔████╔██║██║██╔██╗ ██║██║`);
+  console.log(`  ██║   ██║██╔══╝  ██║╚██╔╝██║██║██║╚██╗██║██║`);
+  console.log(`  ╚██████╔╝███████╗██║ ╚═╝ ██║██║██║ ╚████║██║`);
+  console.log(`   ╚═════╝ ╚══════╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝`);
+  console.log(`  ${C.dim}${C.white}───── CLI Scanner ─────────── v${PKG_VERSION} ──${C.reset}`);
+  console.log('');
   const authStatus = getAuthStatus();
   console.log(`  ${C.dim}Discover patterns in your AI coding environment${C.reset}`);
   console.log(`  ${authStatus}\n`);
