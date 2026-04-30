@@ -25,7 +25,7 @@ describe('computeScore', () => {
   it('returns zero for empty manifest', () => {
     const score = computeScore(MINIMAL_MANIFEST);
     assert.equal(score.total, 0);
-    assert.equal(score.max, 105);
+    assert.equal(score.max, 115);
   });
 
   it('scores MCP servers (5 pts each, max 20)', () => {
@@ -74,7 +74,7 @@ describe('generateReport', () => {
     const m = { ...MINIMAL_MANIFEST, sophistication_score: computeScore(MINIMAL_MANIFEST) };
     const report = generateReport(m);
     assert.ok(report.startsWith('# Gemini CLI Environment Scan Report'));
-    assert.ok(report.includes('Sophistication Score: 0/105'));
+    assert.ok(report.includes('Sophistication Score: 0/115'));
   });
 
   it('includes MCP servers section', () => {

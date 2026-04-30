@@ -12,11 +12,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const https = require('node:https');
 const { parseArgs } = require('node:util');
-const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos } = require('./lib/scanners');
+const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos, scanAntigravity, scanContinue, scanWindsurf, scanJetBrains } = require('./lib/scanners');
 const { suggestSkills } = require('./lib/suggest');
 const { computeScore, generateReport } = require('./lib/report');
 
-const VERSION = '3.1.0';
+const VERSION = '3.2.0';
 const GITHUB_REPO = 'pauldatta/gemini-cli-scanner';
 const SKIP_DIRS = new Set(['node_modules', '.git', 'vendor', '__pycache__', 'dist', 'build', '.next', '.venv', 'venv', '.cache', '.npm', '.yarn', 'coverage', '.terraform']);
 
@@ -126,6 +126,12 @@ async function main() {
   else console.log('  → Conversations (all history)...');
   m.conversations = scanConversations(gdir, { chatDays });
   console.log('  → Project GEMINI.md files...');   m.project_gemini_mds = scanProjectGeminiMds(gdir);
+
+  // AI Tool Ecosystem
+  console.log('  → Antigravity (brain, skills, MCP)...');  m.antigravity = scanAntigravity(gdir);
+  console.log('  → Continue (.continue)...');               m.continue_dev = scanContinue(home);
+  console.log('  → Windsurf (.codeium)...');                m.windsurf = scanWindsurf(home);
+  console.log('  → JetBrains AI...');                       m.jetbrains = scanJetBrains(home);
 
   if (repoPaths.length) {
     // Discover repos recursively if a path is a directory without .git
