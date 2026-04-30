@@ -81,19 +81,30 @@ async function promptCredentials(rl) {
     const key = await new Promise((resolve) => {
       rl.question(`\n  ${C.cyan}API Key:${C.reset} `, resolve);
     });
-    if (key.trim()) {
-      process.env.GOOGLE_API_KEY = key.trim();
-      console.log(`  ${C.green}✓ API Key set for this session.${C.reset}`);
+    const cleaned = key.trim().replace(/[^\x20-\x7E]/g, ''); // Strip non-printable chars from paste
+    if (/^AIza[A-Za-z0-9_-]{35}$/.test(cleaned)) {
+      process.env.GOOGLE_API_KEY = cleaned;
+      console.log(`  ${C.green}✓ Valid API Key set for this session.${C.reset}`);
       return true;
+    } else if (cleaned.length > 0) {
+      console.log(`  ${C.red}✗ Invalid API key format${C.reset} ${C.dim}(expected: AIza... 39 chars)${C.reset}`);
+      console.log(`  ${C.dim}  Got ${cleaned.length} chars, prefix: ${cleaned.slice(0, 6)}...${C.reset}`);
+      console.log(`  ${C.dim}  Tip: copy the key from console.cloud.google.com/apis/credentials${C.reset}`);
+      return false;
     }
   } else if (choice.trim() === '2') {
     const project = await new Promise((resolve) => {
       rl.question(`\n  ${C.cyan}GCP Project ID:${C.reset} `, resolve);
     });
-    if (project.trim()) {
-      process.env.GOOGLE_CLOUD_PROJECT = project.trim();
-      console.log(`  ${C.green}✓ Project set for this session: ${project.trim()}${C.reset}`);
+    const cleaned = project.trim().replace(/[^\x20-\x7E]/g, '');
+    if (/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(cleaned)) {
+      process.env.GOOGLE_CLOUD_PROJECT = cleaned;
+      console.log(`  ${C.green}✓ Valid project set for this session: ${cleaned}${C.reset}`);
       return true;
+    } else if (cleaned.length > 0) {
+      console.log(`  ${C.red}✗ Invalid project ID format${C.reset} ${C.dim}(expected: lowercase, 6-30 chars, e.g. my-project-123)${C.reset}`);
+      console.log(`  ${C.dim}  Got: "${cleaned}"${C.reset}`);
+      return false;
     }
   }
   return false; // skipped
@@ -327,27 +338,37 @@ async function main() {
 
   render();
 
+  let inAction = false; // Guard: ignore keypress events while readline is active
+
   if (process.stdin.isTTY) {
     process.stdin.setRawMode(true);
     process.stdin.resume();
 
     process.stdin.on('keypress', async (str, key) => {
       if (key.ctrl && key.name === 'c') { clear(); process.exit(0); }
+      if (inAction) return; // Ignore keypresses while prompts/scans are running
+
+      // Ignore bare escape key (also sent as part of paste sequences)
+      if (key.name === 'escape') return;
 
       if (key.name === 'up') { selected = (selected - 1 + ITEM_COUNT) % ITEM_COUNT; render(); }
       else if (key.name === 'down') { selected = (selected + 1) % ITEM_COUNT; render(); }
       else if (key.name === 'return') {
+        inAction = true;
         process.stdin.setRawMode(false);
         await handleAction(selected);
         if (process.stdin.isTTY) process.stdin.setRawMode(true);
+        inAction = false;
       }
       else if (str === 'q') { clear(); console.log(`  ${C.dim}Goodbye! 👋${C.reset}\n`); process.exit(0); }
       else if (str >= '1' && str <= '4') {
         selected = parseInt(str) - 1;
         render();
+        inAction = true;
         process.stdin.setRawMode(false);
         await handleAction(selected);
         if (process.stdin.isTTY) process.stdin.setRawMode(true);
+        inAction = false;
       }
     });
   }
