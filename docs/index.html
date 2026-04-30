@@ -390,19 +390,13 @@
     }, { threshold: 0.15 });
     observer.observe(landing);
 
-    // Scroll past landing when any doc link is clicked
+    // Scroll past landing when any doc link is clicked (immediate feedback)
+    let userClickedDocLink = false;
     document.addEventListener('click', (e) => {
-      const link = e.target.closest('a[href^="#/"]');
-      if (link) {
-        setTimeout(() => {
-          const docsEl = document.getElementById('app');
-          if (docsEl) docsEl.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+      if (e.target.closest('a[href^="#/"]')) {
+        userClickedDocLink = true;
       }
     });
-
-    // Track whether this is a deep-link load (not root)
-    const isDeepLink = window.location.hash && window.location.hash !== '#/' && window.location.hash !== '#';
 
     window.$docsify = {
       name: '🔍 gemini-cli-scanner',
@@ -427,17 +421,18 @@
       },
       plugins: [
         function scrollPastLanding(hook) {
-          let firstRender = true;
+          const isDeepLink = window.location.hash && window.location.hash !== '#/' && window.location.hash !== '#';
           hook.doneEach(function () {
-            // On first render with a deep-link hash, scroll past landing
-            if (firstRender && isDeepLink) {
-              firstRender = false;
+            // Scroll past landing if: deep-linked on load, or user clicked a doc link while on landing
+            const onLanding = document.body.classList.contains('on-landing');
+            if (isDeepLink || userClickedDocLink || onLanding) {
               const docsEl = document.getElementById('app');
-              if (docsEl) docsEl.scrollIntoView({ behavior: 'smooth' });
+              if (docsEl && landing.getBoundingClientRect().bottom > 0) {
+                docsEl.scrollIntoView({ behavior: 'smooth' });
+              }
+              userClickedDocLink = false;
             }
           });
-          // Also handle in-app route changes (sidebar clicks while on landing)
-          hook.afterEach(function (html) { return html; });
         },
       ],
     };
