@@ -1,5 +1,11 @@
 # gemini-cli-scanner
 
+[![Tests](https://github.com/pauldatta/gemini-cli-scanner/actions/workflows/test.yml/badge.svg)](https://github.com/pauldatta/gemini-cli-scanner/actions/workflows/test.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/pauldatta/gemini-cli-scanner)](https://github.com/pauldatta/gemini-cli-scanner/releases/latest)
+[![npm version](https://img.shields.io/npm/v/gemini-cli-scanner)](https://www.npmjs.com/package/gemini-cli-scanner)
+[![Node.js](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)](https://nodejs.org)
+[![License](https://img.shields.io/github/license/pauldatta/gemini-cli-scanner)](LICENSE)
+
 Discover patterns in your Gemini CLI and Claude Code environments. Extract tribal knowledge from how you *actually* use AI coding tools and surface it as reusable skills, agents, and best practices.
 
 ## Quick Start
