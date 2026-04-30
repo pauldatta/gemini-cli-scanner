@@ -27,9 +27,11 @@ function clear() { process.stdout.write('\x1b[2J\x1b[H'); }
 function printHeader() {
   console.log(`${C.bold}${C.cyan}`);
   console.log(`  ╔══════════════════════════════════════════╗`);
-  console.log(`  ║   🔍  Gemini CLI Scanner  v3.0.0        ║`);
+  console.log(`  ║   🔍  Gemini CLI Scanner  v3.0.1        ║`);
   console.log(`  ╚══════════════════════════════════════════╝${C.reset}`);
-  console.log(`  ${C.dim}Discover patterns in your AI coding environment${C.reset}\n`);
+  const authStatus = getAuthStatus();
+  console.log(`  ${C.dim}Discover patterns in your AI coding environment${C.reset}`);
+  console.log(`  ${authStatus}\n`);
 }
 
 function printMenu(selected) {
@@ -53,10 +55,56 @@ function printMenu(selected) {
   console.log(`\n  ${C.dim}↑/↓ to navigate, Enter to select, or press number key${C.reset}`);
 }
 
+function getAuthStatus() {
+  const hasProject = !!process.env.GOOGLE_CLOUD_PROJECT;
+  const hasKey = !!process.env.GOOGLE_API_KEY;
+  if (hasProject) return `${C.green}✓ Vertex AI${C.reset} ${C.dim}(${process.env.GOOGLE_CLOUD_PROJECT})${C.reset}`;
+  if (hasKey) return `${C.green}✓ API Key${C.reset} ${C.dim}(configured)${C.reset}`;
+  return `${C.yellow}⚠ No AI credentials${C.reset} ${C.dim}— Full Scan will prompt you${C.reset}`;
+}
+
+async function promptCredentials(rl) {
+  console.log(`\n  ${C.bold}${C.cyan}🔑 AI Credentials Required${C.reset}`);
+  console.log(`  ${C.dim}Needed for AI-powered skill suggestions.${C.reset}`);
+  console.log(`  ${C.dim}Skip to run without AI suggestions.${C.reset}\n`);
+
+  const choice = await new Promise((resolve) => {
+    rl.question(`  ${C.cyan}[1]${C.reset} Enter Google API Key\n  ${C.cyan}[2]${C.reset} Enter GCP Project (Vertex AI)\n  ${C.cyan}[s]${C.reset} Skip (no AI suggestions)\n\n  > `, resolve);
+  });
+
+  if (choice.trim() === '1') {
+    const key = await new Promise((resolve) => {
+      rl.question(`\n  ${C.cyan}API Key:${C.reset} `, resolve);
+    });
+    if (key.trim()) {
+      process.env.GOOGLE_API_KEY = key.trim();
+      console.log(`  ${C.green}✓ API Key set for this session.${C.reset}`);
+      return true;
+    }
+  } else if (choice.trim() === '2') {
+    const project = await new Promise((resolve) => {
+      rl.question(`\n  ${C.cyan}GCP Project ID:${C.reset} `, resolve);
+    });
+    if (project.trim()) {
+      process.env.GOOGLE_CLOUD_PROJECT = project.trim();
+      console.log(`  ${C.green}✓ Project set for this session: ${project.trim()}${C.reset}`);
+      return true;
+    }
+  }
+  return false; // skipped
+}
+
+function hasAICredentials() {
+  return !!process.env.GOOGLE_CLOUD_PROJECT || !!process.env.GOOGLE_API_KEY;
+}
+
 function runScanner(args, label) {
   return new Promise((resolve) => {
     console.log(`\n  ${C.yellow}⏳ ${label}...${C.reset}\n`);
-    const child = spawn('node', [SCANNER, ...args], { stdio: 'inherit' });
+    const child = spawn('node', [SCANNER, ...args], {
+      stdio: 'inherit',
+      env: { ...process.env },
+    });
     child.on('close', (code) => {
       if (code === 0) console.log(`\n  ${C.green}✅ Done!${C.reset}`);
       else console.log(`\n  ${C.red}✖ Scanner exited with code ${code}${C.reset}`);
@@ -180,9 +228,18 @@ async function main() {
       case 0: // Quick scan
         await runScanner(['--skip-suggestions', '--output-dir', DEFAULT_OUT], 'Running quick scan');
         break;
-      case 1: // Full scan
+      case 1: { // Full scan
+        if (!hasAICredentials()) {
+          const set = await promptCredentials(rl);
+          if (!set) {
+            console.log(`  ${C.dim}Running without AI suggestions.${C.reset}`);
+            await runScanner(['--skip-suggestions', '--output-dir', DEFAULT_OUT], 'Running scan (no AI)');
+            break;
+          }
+        }
         await runScanner(['--output-dir', DEFAULT_OUT], 'Running full scan with AI suggestions');
         break;
+      }
       case 2: { // Scan with repos
         const repos = await promptRepos(rl);
         if (repos.length) {
@@ -205,6 +262,7 @@ async function main() {
     }
 
     console.log(`\n  ${C.dim}Press any key to return to menu...${C.reset}`);
+    if (process.stdin.isTTY) process.stdin.setRawMode(true);
     await new Promise((resolve) => {
       process.stdin.once('keypress', resolve);
     });
@@ -239,4 +297,10 @@ async function main() {
   }
 }
 
-main().catch(e => { console.error('Fatal:', e.message); process.exit(1); });
+// Run only when executed directly, not when required as a module
+if (require.main === module) {
+  main().catch(e => { console.error('Fatal:', e.message); process.exit(1); });
+}
+
+// Export internals for testing
+module.exports = { getAuthStatus, hasAICredentials, C, DEFAULT_OUT };
