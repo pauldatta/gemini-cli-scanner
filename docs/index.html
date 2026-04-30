@@ -71,7 +71,8 @@
       -webkit-text-fill-color: var(--text-secondary);
     }
     .hero-tagline {
-      font-size: 1.2rem;
+      font-size: 1.05rem;
+      line-height: 1.6;
       color: var(--text-secondary);
       margin: 0.5rem 0 1.25rem;
     }
@@ -288,15 +289,24 @@
     .sidebar-nav li a { font-size: 0.95rem; }
     .markdown-section { max-width: 860px; }
     .markdown-section table { display: table; width: 100%; }
+
+    /* Hide sidebar + toggle while landing is in view */
+    body.on-landing .sidebar,
+    body.on-landing .sidebar-toggle {
+      display: none;
+    }
+    body.on-landing .content {
+      margin-left: 0 !important;
+    }
   </style>
 </head>
-<body>
+<body class="on-landing">
   <!-- Custom landing page (replaces Docsify coverpage) -->
   <section class="landing" id="landing">
     <div class="hero">
       <div class="hero-text">
         <h1>gemini-cli-scanner <span class="version">v3.3.1</span></h1>
-        <p class="hero-tagline">Your AI coding environment, audited.</p>
+        <p class="hero-tagline">Discover patterns in your Gemini CLI and Claude Code environments. Extract tribal knowledge from how you <em>actually</em> use AI coding tools and surface it as reusable skills, agents, and best practices.</p>
         <div class="feature-pills">
           <span class="pill">📊 Maturity Scoring</span>
           <span class="pill">🔍 Pattern Detection</span>
@@ -372,6 +382,12 @@
       if (btn.classList) btn.classList.add('copied');
       setTimeout(() => { btn.textContent = orig; if (btn.classList) btn.classList.remove('copied'); }, 2000);
     }
+
+    // Show sidebar only when scrolled past landing
+    const observer = new IntersectionObserver(([entry]) => {
+      document.body.classList.toggle('on-landing', entry.isIntersecting);
+    }, { threshold: 0.15 });
+    observer.observe(document.getElementById('landing'));
 
     window.$docsify = {
       name: '🔍 gemini-cli-scanner',
