@@ -272,39 +272,54 @@ def scan_repos(repo_paths: list) -> list:
             print(f"  ⚠ Repo path not found: {p}"); continue
         repo = {"path": str(p), "name": p.name}
 
-        # GEMINI.md at root
+        # GEMINI.md at root — extract content (capped)
         gmd = p / "GEMINI.md"
         if gmd.exists():
             c = gmd.read_text()
-            repo["gemini_md"] = {"word_count": len(c.split()),
-                                 "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE)}
+            words = c.split()
+            repo["gemini_md"] = {
+                "word_count": len(words),
+                "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE),
+                "content_preview": ' '.join(words[:500]),  # First 500 words for AI analysis
+            }
 
-        # CLAUDE.md at root
+        # CLAUDE.md at root — extract content (capped)
         cmd = p / "CLAUDE.md"
         if cmd.exists():
             c = cmd.read_text()
-            repo["claude_md"] = {"word_count": len(c.split()),
-                                 "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE)}
+            words = c.split()
+            repo["claude_md"] = {
+                "word_count": len(words),
+                "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE),
+                "content_preview": ' '.join(words[:500]),
+            }
 
         # .gemini/ project config
         gdir = p / ".gemini"
         if gdir.exists():
             gcfg = {}
-            # settings.json
+            # settings.json — extract MCP server details
             sj = gdir / "settings.json"
             if sj.exists():
                 try:
                     raw = json.loads(sj.read_text())
-                    gcfg["settings"] = redact_dict(raw)
+                    redacted = redact_dict(raw)
+                    gcfg["settings"] = redacted
+                    # Extract MCP server details for richer reporting
+                    mcp = redacted.get("mcpServers", {})
+                    gcfg["mcp_details"] = {
+                        name: {"command": cfg.get("command",""), "args": cfg.get("args",[])}
+                        for name, cfg in mcp.items()
+                    }
                 except: pass
-            # Skills
+            # Skills — extract full content
             sk = gdir / "skills"
             if sk.exists():
                 gcfg["skills"] = []
                 for d in sk.iterdir():
                     if d.is_dir() and (d / "SKILL.md").exists():
                         content = (d / "SKILL.md").read_text()
-                        info = {"name": d.name}
+                        info = {"name": d.name, "content_preview": content[:1000]}
                         fm = re.match(r'^---\s*\n(.+?)\n---', content, re.DOTALL)
                         if fm:
                             for line in fm.group(1).split('\n'):
@@ -312,17 +327,29 @@ def scan_repos(repo_paths: list) -> list:
                                     k, v = line.split(':', 1)
                                     info[k.strip()] = v.strip()
                         gcfg["skills"].append(info)
-            # Agents
+            # Agents — extract frontmatter details (tools, model, description)
             ag = gdir / "agents"
             if ag.exists():
-                gcfg["agents"] = [f.stem for f in ag.glob("*.md")]
-            # Nested GEMINI.md
+                gcfg["agents"] = []
+                for f in ag.glob("*.md"):
+                    content = f.read_text()
+                    info = {"name": f.stem}
+                    fm = re.match(r'^---\s*\n(.+?)\n---', content, re.DOTALL)
+                    if fm:
+                        for line in fm.group(1).split('\n'):
+                            if ':' in line:
+                                k, v = line.split(':', 1)
+                                info[k.strip()] = v.strip()
+                    gcfg["agents"].append(info)
+            # Nested GEMINI.md context files
             for nested in gdir.rglob("GEMINI.md"):
                 c = nested.read_text()
+                words = c.split()
                 gcfg.setdefault("context_files", []).append({
                     "path": str(nested.relative_to(p)),
-                    "word_count": len(c.split()),
+                    "word_count": len(words),
                     "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE),
+                    "content_preview": ' '.join(words[:300]),
                 })
             repo["gemini_config"] = gcfg
 
@@ -332,9 +359,11 @@ def scan_repos(repo_paths: list) -> list:
             ccfg = {}
             for cf in cdir.glob("*.md"):
                 c = cf.read_text()
+                words = c.split()
                 ccfg.setdefault("context_files", []).append({
-                    "name": cf.name, "word_count": len(c.split()),
+                    "name": cf.name, "word_count": len(words),
                     "sections": re.findall(r'^#+\s+(.+)$', c, re.MULTILINE),
+                    "content_preview": ' '.join(words[:300]),
                 })
             repo["claude_config"] = ccfg
 
@@ -364,6 +393,42 @@ def compute_score(m: dict) -> dict:
 # ---------------------------------------------------------------------------
 # Gemini API: Suggest skills from conversation patterns
 # ---------------------------------------------------------------------------
+def _build_repo_context(repos: list) -> str:
+    """Build a compact text summary of repo configs for the AI prompt."""
+    if not repos:
+        return "No code repos scanned."
+    lines = []
+    for r in repos[:15]:  # Cap at 15 repos to control token cost
+        name = r.get("name", "unknown")
+        parts = [f"### {name}"]
+        # GEMINI.md content
+        gmd = r.get("gemini_md", {})
+        if gmd.get("content_preview"):
+            parts.append(f"GEMINI.md ({gmd['word_count']} words): {gmd['content_preview'][:300]}")
+        # MCP servers
+        gc = r.get("gemini_config", {})
+        mcp = gc.get("mcp_details", {})
+        if mcp:
+            parts.append(f"MCP servers: {json.dumps({n: d['command'] for n, d in mcp.items()})}")
+        # Project skills
+        skills = gc.get("skills", [])
+        if skills:
+            parts.append(f"Project skills: {', '.join(s.get('name','') + ' - ' + s.get('description','')[:80] for s in skills)}")
+        # Project agents
+        agents = gc.get("agents", [])
+        if agents and isinstance(agents, list) and isinstance(agents[0], dict):
+            parts.append(f"Project agents: {', '.join(a.get('name','') + ' (' + a.get('model','') + ')' for a in agents)}")
+        # Context files
+        ctx = gc.get("context_files", [])
+        if ctx:
+            for cf in ctx[:3]:
+                preview = cf.get("content_preview", "")[:200]
+                if preview:
+                    parts.append(f"Context ({cf.get('path','')}): {preview}")
+        if len(parts) > 1:  # Only include repos that have something
+            lines.append('\n'.join(parts))
+    return '\n\n'.join(lines) if lines else "No project-level configs found in scanned repos."
+
 def suggest_skills(manifest: dict, api_key: str = None, project: str = None) -> list:
     """Use Gemini to analyze conversation patterns and suggest skill creation."""
 
@@ -390,8 +455,11 @@ Claude Code: {json.dumps(claude_skills)}
 ## Sample User Prompts (chronological)
 {json.dumps([p["text"] for p in prompts], indent=2)}
 
+## Code Repository Configs
+{_build_repo_context(manifest.get("repos", []))}
+
 ## Task
-Based on the patterns above, suggest 3-5 NEW reusable skills this user should create.
+Based on the patterns above (including repo configs, GEMINI.md content, and MCP server setups), suggest 3-5 NEW reusable skills this user should create.
 For each skill, provide:
 1. A short `name` (kebab-case, e.g. "gke-troubleshooter")
 2. A `description` (one line)
@@ -529,18 +597,35 @@ def generate_report(m: dict) -> str:
             L.append(f"### 📁 {r['name']}\n")
             L.append(f"`{r['path']}`\n")
             if "gemini_md" in r:
-                L.append(f"- **GEMINI.md** — {r['gemini_md']['word_count']} words, sections: {', '.join(r['gemini_md'].get('sections',[]))}")
+                gmd = r["gemini_md"]
+                L.append(f"- **GEMINI.md** — {gmd['word_count']} words, sections: {', '.join(gmd.get('sections',[]))}")
             if "claude_md" in r:
-                L.append(f"- **CLAUDE.md** — {r['claude_md']['word_count']} words")
+                cmd = r["claude_md"]
+                L.append(f"- **CLAUDE.md** — {cmd['word_count']} words, sections: {', '.join(cmd.get('sections',[]))}")
             gc = r.get("gemini_config", {})
             if gc:
-                if "settings" in gc:
-                    mcp = gc["settings"].get("mcpServers", {})
-                    if mcp: L.append(f"- **Project MCP servers:** {', '.join(mcp.keys())}")
-                if "skills" in gc:
-                    L.append(f"- **Project skills:** {', '.join(s['name'] for s in gc['skills'])}")
-                if "agents" in gc:
-                    L.append(f"- **Project agents:** {', '.join(gc['agents'])}")
+                # MCP servers with commands
+                mcp = gc.get("mcp_details", {})
+                if mcp:
+                    for mname, md in mcp.items():
+                        cmd_str = md.get("command", "")
+                        args = md.get("args", [])
+                        args_str = f" ({' '.join(str(a) for a in args[:3])})" if args else ""
+                        L.append(f"  - 🔌 `{mname}` — `{cmd_str}`{args_str}")
+                # Skills with descriptions
+                skills = gc.get("skills", [])
+                if skills:
+                    for sk in skills:
+                        desc = sk.get("description", "")[:100]
+                        L.append(f"  - 🎯 Skill: **{sk['name']}** — {desc}" if desc else f"  - 🎯 Skill: **{sk['name']}**")
+                # Agents with model info
+                agents = gc.get("agents", [])
+                if agents and isinstance(agents, list):
+                    for ag in agents if isinstance(agents[0], dict) else []:
+                        model = ag.get("model", "")
+                        desc = ag.get("description", "")[:80]
+                        detail = f" ({model})" if model else ""
+                        L.append(f"  - 🤖 Agent: **{ag.get('name','')}**{detail} — {desc}" if desc else f"  - 🤖 Agent: **{ag.get('name','')}**{detail}")
             L.append("")
 
     L.append("\n---\n*Generated by gemini-cli-scanner. Review before sharing.*")
