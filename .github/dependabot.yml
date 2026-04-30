@@ -1,0 +1,25 @@
+version: 2
+updates:
+  # Keep GitHub Actions up to date
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    labels:
+      - 'area/docs'
+    commit-message:
+      prefix: 'ci'
+
+  # Monitor npm for any future dependencies
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    labels:
+      - 'area/scanner'
+    commit-message:
+      prefix: 'deps'
+    # We're zero-dependency today — this catches devDependency drift
+    open-pull-requests-limit: 5

@@ -1,0 +1,185 @@
+name: '🏷️ Issue Triage'
+
+on:
+  issues:
+    types:
+      - 'opened'
+      - 'reopened'
+  issue_comment:
+    types:
+      - 'created'
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to triage'
+        required: true
+        type: 'number'
+
+concurrency:
+  group: '${{ github.workflow }}-${{ github.event.issue.number || github.event.inputs.issue_number }}'
+  cancel-in-progress: true
+
+permissions:
+  contents: 'read'
+  issues: 'write'
+
+jobs:
+  triage-issue:
+    if: |-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issues' ||
+        (
+          github.event_name == 'issue_comment' &&
+          contains(github.event.comment.body, '/triage') &&
+          (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'MEMBER' || github.event.comment.author_association == 'COLLABORATOR')
+        )
+      )
+    timeout-minutes: 3
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: 'Get issue data (manual trigger)'
+        id: 'get_issue_data'
+        if: github.event_name == 'workflow_dispatch'
+        uses: 'actions/github-script@v7'
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ github.event.inputs.issue_number }},
+            });
+            core.setOutput('title', issue.title);
+            core.setOutput('body', issue.body || '');
+
+      - name: 'Skip if already triaged'
+        id: 'check_labels'
+        uses: 'actions/github-script@v7'
+        env:
+          ISSUE_NUMBER: '${{ github.event.issue.number || github.event.inputs.issue_number }}'
+        with:
+          script: |
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.ISSUE_NUMBER),
+            });
+            const hasArea = issue.labels.some(l => l.name.startsWith('area/'));
+            if (hasArea && github.event_name !== 'workflow_dispatch') {
+              core.info('Issue already has area/ label. Skipping.');
+              core.setOutput('skip', 'true');
+            } else {
+              core.setOutput('skip', 'false');
+            }
+
+      - name: 'Run Gemini Issue Analysis'
+        if: steps.check_labels.outputs.skip != 'true'
+        uses: 'google-github-actions/run-gemini-cli@v0'
+        id: 'gemini_analysis'
+        env:
+          GITHUB_TOKEN: '' # Do not pass auth to model — untrusted input
+          ISSUE_TITLE: >-
+            ${{ github.event_name == 'workflow_dispatch' && steps.get_issue_data.outputs.title || github.event.issue.title }}
+          ISSUE_BODY: >-
+            ${{ github.event_name == 'workflow_dispatch' && steps.get_issue_data.outputs.body || github.event.issue.body }}
+        with:
+          gemini_api_key: '${{ secrets.GEMINI_API_KEY }}'
+          settings: |-
+            {
+              "maxSessionTurns": 5,
+              "coreTools": ["run_shell_command(echo)"]
+            }
+          prompt: |-
+            ## Role
+
+            You are an issue triage assistant for gemini-cli-scanner, a Node.js CLI tool that scans Gemini CLI and Claude Code environments to discover patterns and suggest reusable skills.
+
+            ## Steps
+            1. Review the issue title: ${{ env.ISSUE_TITLE }}
+            2. Review the issue body: ${{ env.ISSUE_BODY }}
+            3. Select exactly ONE type label and exactly ONE area label based on the definitions below.
+            4. Output your selection as JSON and nothing else.
+
+            ## Output Format
+            {"type": "type/bug", "area": "area/scanner"}
+
+            ## Type Labels
+            - type/bug: Something isn't working as expected
+            - type/feature: A new feature or enhancement request
+            - type/docs: Documentation improvement or correction
+            - type/question: A question about usage or behavior
+
+            ## Area Labels
+            - area/tui: TUI navigation, menus, scrollable viewers, auth settings, keybindings
+            - area/scanner: Scanning logic, data collection from ~/.gemini, ~/.claude, repos, ecosystem detection
+            - area/advisory: Maturity scoring, best practice recommendations, advisory engine
+            - area/pipeline: AI skill suggestions, model calls, prompt engineering, retry logic
+            - area/docs: README, CHANGELOG, documentation files
+            - area/unknown: Does not clearly fit any other area
+
+            ## Guidelines
+            - Output ONLY valid JSON. No explanation, no markdown, no extra text.
+            - If unsure about area, use area/unknown.
+            - If unsure about type, use type/question.
+
+      - name: 'Apply Labels'
+        if: steps.check_labels.outputs.skip != 'true' && steps.gemini_analysis.outputs.summary != ''
+        uses: 'actions/github-script@v7'
+        env:
+          ISSUE_NUMBER: '${{ github.event.issue.number || github.event.inputs.issue_number }}'
+          GEMINI_OUTPUT: '${{ steps.gemini_analysis.outputs.summary }}'
+        with:
+          script: |
+            const raw = process.env.GEMINI_OUTPUT;
+            core.info(`Raw Gemini output: ${raw}`);
+
+            let parsed;
+            try {
+              parsed = JSON.parse(raw);
+            } catch (e1) {
+              // Try extracting from markdown code block
+              const match = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+              if (match) {
+                try { parsed = JSON.parse(match[1].trim()); } catch (e2) {}
+              }
+              // Try finding a raw JSON object
+              if (!parsed) {
+                const objMatch = raw.match(/(\{[\s\S]*"type"[\s\S]*"area"[\s\S]*\})/);
+                if (objMatch) {
+                  try { parsed = JSON.parse(objMatch[0]); } catch (e3) {}
+                }
+              }
+            }
+
+            if (!parsed || !parsed.type || !parsed.area) {
+              core.warning(`Could not parse triage output. Applying fallback labels.`);
+              parsed = { type: 'type/question', area: 'area/unknown' };
+            }
+
+            const validTypes = ['type/bug', 'type/feature', 'type/docs', 'type/question'];
+            const validAreas = ['area/tui', 'area/scanner', 'area/advisory', 'area/pipeline', 'area/docs', 'area/unknown'];
+
+            const typeLabel = validTypes.includes(parsed.type) ? parsed.type : 'type/question';
+            const areaLabel = validAreas.includes(parsed.area) ? parsed.area : 'area/unknown';
+
+            const labels = [typeLabel, areaLabel];
+
+            // Remove status/triage once classified
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: parseInt(process.env.ISSUE_NUMBER),
+                name: 'status/triage'
+              });
+            } catch (e) {
+              core.info('status/triage label not present, skipping removal.');
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.ISSUE_NUMBER),
+              labels: labels
+            });
+            core.info(`Applied labels: ${labels.join(', ')}`);

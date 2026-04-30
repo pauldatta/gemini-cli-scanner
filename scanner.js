@@ -15,10 +15,22 @@ const { parseArgs } = require('node:util');
 const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos, scanAntigravity, scanContinue, scanWindsurf, scanJetBrains } = require('./lib/scanners');
 const { suggestSkills } = require('./lib/suggest');
 const { computeScore, generateReport } = require('./lib/report');
+const { runAdvisory } = require('./lib/advisor');
 
-const VERSION = '3.2.1';
+const VERSION = '3.3.0';
 const GITHUB_REPO = 'pauldatta/gemini-cli-scanner';
 const SKIP_DIRS = new Set(['node_modules', '.git', 'vendor', '__pycache__', 'dist', 'build', '.next', '.venv', 'venv', '.cache', '.npm', '.yarn', 'coverage', '.terraform']);
+
+/** Returns true if version a is strictly greater than version b (semver). */
+function semverGt(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((pa[i] || 0) > (pb[i] || 0)) return true;
+    if ((pa[i] || 0) < (pb[i] || 0)) return false;
+  }
+  return false;
+}
 
 /**
  * Discover git repos under given paths. If a path itself has .git, it's a repo.
@@ -65,7 +77,7 @@ function checkForUpdates() {
         try {
           const d = JSON.parse(data);
           const latest = (d.tag_name || '').replace(/^v/, '');
-          if (latest && latest !== VERSION) {
+          if (latest && semverGt(latest, VERSION)) {
             const body = (d.body || '').split('\n')[0];
             console.log(`\n📦 Update available: v${VERSION} → v${latest}`);
             if (body) console.log(`   ${body}`);
@@ -149,6 +161,11 @@ async function main() {
 
   m.sophistication_score = computeScore(m);
 
+  // Advisory engine — evaluate best practices
+  m._raw_settings = m.settings?._raw || {};
+  console.log('  → Running best practices advisory...');
+  m.advisory = runAdvisory(m);
+
   if (!values['skip-suggestions']) {
     console.log('  → Suggesting skills (Gemini API)...');
     m.suggested_skills = await suggestSkills(m, {
@@ -170,7 +187,9 @@ async function main() {
     console.log(`✅ Markdown report: ${mp}`);
   }
 
-  console.log(`\n📊 Score: ${m.sophistication_score.total}/${m.sophistication_score.max}`);
+  const mat = m.advisory?.maturity || {};
+  console.log(`\n📊 Maturity Score: ${m.sophistication_score.total}/${m.sophistication_score.max}`);
+  console.log(`🩺 Maturity: ${mat.emoji || ''} ${mat.label || 'N/A'} (${m.advisory?.summary?.total || 0} recommendations)`);
 }
 
 main().catch(e => { console.error('Fatal error:', e.message); process.exit(1); });

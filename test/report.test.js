@@ -74,7 +74,7 @@ describe('generateReport', () => {
     const m = { ...MINIMAL_MANIFEST, sophistication_score: computeScore(MINIMAL_MANIFEST) };
     const report = generateReport(m);
     assert.ok(report.startsWith('# Gemini CLI Environment Scan Report'));
-    assert.ok(report.includes('Sophistication Score: 0/115'));
+    assert.ok(report.includes('Maturity Score: 0/115'));
   });
 
   it('includes MCP servers section', () => {

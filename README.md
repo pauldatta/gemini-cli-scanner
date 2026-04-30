@@ -19,8 +19,9 @@ npx gemini-cli-scanner
 This launches an interactive TUI with:
 - **Quick Scan** — environment scan, optional repo discovery, no API key needed
 - **Full Scan** — everything + AI-powered skill suggestions from your conversation patterns
-- **View Report** — colorized markdown in your terminal
-- **View Score** — visual sophistication score breakdown with progress bars
+- **View Report** — full-screen scrollable report with colorized markdown and section-jump navigation (`t` for TOC)
+- **Maturity Dashboard** — maturity tier, capability score breakdown, quick stats, and all advisory recommendations
+- **Auth Settings** — instant credential switching between detected env vars, with export hints for persistence
 
 Both scan types prompt for:
 - **Code repo paths** — e.g. `~/Code` to auto-discover all git repos (3 levels deep)
@@ -57,12 +58,14 @@ This scanner reads your `~/.gemini/`, `~/.claude/`, and any code repos you point
 
 1. **Catalog** your MCP servers, skills, extensions, agents, and context files
 2. **Analyze** your conversation history — what tools you use most, what topics you work on, what models you rely on
-3. **Discover your AI tool ecosystem** — Antigravity, Continue, Windsurf, JetBrains AI, and Claude Code, with cross-tool skill overlap analysis
-4. **Discover repos** recursively under parent directories (up to 3 levels deep by default) — no need to list each repo individually
-5. **Scan code repos** for project-level `.gemini/` and `.claude/` configs — settings.json, skills, agents, GEMINI.md, CLAUDE.md
-6. **Suggest new skills** using a two-stage AI pipeline — flash-lite identifies patterns, pro writes production-grade SKILL.md files following [agentskills.io](https://agentskills.io) best practices
-7. **Score** your environment sophistication (0-115) so you know what capabilities you're leaving on the table
-8. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
+3. **Advise on best practices** — evaluate your config against 8 categories of Gemini CLI best practices (policy hygiene, MCP governance, GEMINI.md quality, skills optimization, settings, hooks, extensions, context architecture) with direct links to official documentation
+4. **Rate your maturity** — Getting Started → Intermediate → Advanced → Expert, based on how well your environment follows documented best practices
+5. **Discover your AI tool ecosystem** — Antigravity, Continue, Windsurf, JetBrains AI, and Claude Code, with cross-tool skill overlap analysis
+6. **Discover repos** recursively under parent directories (up to 3 levels deep by default) — no need to list each repo individually
+7. **Scan code repos** for project-level `.gemini/` and `.claude/` configs — settings.json, skills, agents, GEMINI.md, CLAUDE.md
+8. **Suggest new skills** using a two-stage AI pipeline — flash-lite identifies patterns, pro writes production-grade SKILL.md files following [agentskills.io](https://agentskills.io) best practices
+9. **Score** your environment maturity (0-115) so you know what capabilities you're leaving on the table
+10. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
 
 ## Configure (optional — for AI skill suggestions)
 
@@ -151,7 +154,8 @@ node tui.js
 # Headless
 node scanner.js --skip-suggestions
 
-# Run tests (118 tests)
+
+# Run tests (155 tests across 9 test files)
 make test
 
 # Install as Gemini CLI extension from local clone
@@ -190,7 +194,7 @@ Each discovered repo is logged during scanning so you can see exactly what's bei
 After running, check `scan-results/` in your current directory:
 
 - **`gemini-env-manifest.json`** — Full structured data (for aggregation across team members)
-- **`gemini-env-report.md`** — Human-readable summary with sophistication score, top tools, suggested skills, and repo configs
+- **`gemini-env-report.md`** — Human-readable summary with maturity score, advisory recommendations, top tools, suggested skills, and repo configs
 
 **Review the report before sharing.** While credentials are auto-redacted, your conversation prompts and topics are included to enable pattern detection.
 

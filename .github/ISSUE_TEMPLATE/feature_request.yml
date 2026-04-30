@@ -1,0 +1,48 @@
+name: 'Feature Request'
+description: 'Suggest an idea for gemini-cli-scanner'
+labels:
+  - 'type/feature'
+  - 'status/triage'
+type: 'Feature'
+body:
+  - type: 'markdown'
+    attributes:
+      value: |-
+        > [!IMPORTANT]
+        > Thanks for taking the time to suggest an enhancement!
+        >
+        > Please search **[existing issues](https://github.com/pauldatta/gemini-cli-scanner/issues)** to see if a similar feature has already been requested.
+
+  - type: 'textarea'
+    id: 'feature'
+    attributes:
+      label: 'What would you like to be added?'
+      description: 'A clear and concise description of the enhancement.'
+    validations:
+      required: true
+
+  - type: 'textarea'
+    id: 'rationale'
+    attributes:
+      label: 'Why is this needed?'
+      description: 'A clear and concise description of why this enhancement is needed.'
+    validations:
+      required: true
+
+  - type: 'dropdown'
+    id: 'area'
+    attributes:
+      label: 'Which area does this relate to?'
+      options:
+        - TUI (menus, navigation, viewers)
+        - Scanner (data collection, environment scanning)
+        - Advisory (maturity scoring, recommendations)
+        - Pipeline (AI skill suggestions)
+        - Docs (README, guides)
+        - Other / Not sure
+
+  - type: 'textarea'
+    id: 'additional-context'
+    attributes:
+      label: 'Additional context'
+      description: 'Add any other context, mockups, or examples about the feature request here.'

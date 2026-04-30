@@ -289,7 +289,8 @@ describe('two-stage pipeline architecture', () => {
   });
 
   it('includes graceful degradation stubs', () => {
-    assert.ok(src.includes('Skill template generation failed'), 'Should have fallback stub text');
+    assert.ok(src.includes('When to Use'), 'Should have fallback template with When to Use section');
+    assert.ok(src.includes('Procedure'), 'Should have fallback template with Procedure section');
   });
 });
 
@@ -302,21 +303,13 @@ describe('TUI report viewer cascade', () => {
     assert.ok(tuiSrc.includes('function whichCmd'), 'Should define whichCmd');
   });
 
-  it('tries glow first', () => {
-    const glowIdx = tuiSrc.indexOf("whichCmd('glow')");
-    const batIdx = tuiSrc.indexOf("whichCmd('bat')");
-    assert.ok(glowIdx > 0, 'Should check for glow');
-    assert.ok(glowIdx < batIdx, 'Should check glow BEFORE bat');
+  it('uses built-in scrollable viewer', () => {
+    assert.ok(tuiSrc.includes('scrollableView'), 'Should use shared scrollable viewer');
   });
 
-  it('tries bat as second option', () => {
-    assert.ok(tuiSrc.includes('bat --language=md'), 'Should use bat with markdown language');
-    assert.ok(tuiSrc.includes('--paging=always'), 'Should enable bat pager');
-  });
-
-  it('shows install hints in built-in fallback', () => {
-    assert.ok(tuiSrc.includes('brew install glow'), 'Should suggest glow install');
-    assert.ok(tuiSrc.includes('brew install bat'), 'Should suggest bat install');
+  it('builds section index for TOC navigation', () => {
+    assert.ok(tuiSrc.includes('sections.push'), 'Should build sections from headings');
+    assert.ok(tuiSrc.includes('scrollableView(L, sections)'), 'Should pass sections to viewer');
   });
 
   it('preserves built-in colorizer as final fallback', () => {

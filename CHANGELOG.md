@@ -2,6 +2,41 @@
 
 All notable changes to gemini-cli-scanner will be documented in this file.
 
+## [3.3.1] - 2026-04-30
+
+### Added
+- **Maturity Dashboard:** Renamed "View Score" → "Maturity Dashboard" — unified view combining maturity tier, capability score breakdown, quick stats, and all advisory recommendations grouped by category
+- **Scrollable Viewer:** Full-screen scrollable viewer for both Report and Dashboard with ↑/↓/j/k (line), f/b/PgUp/PgDn (page), g/G/Home/End (top/bottom), Esc/q (exit)
+- **Report TOC Navigation:** Press `t` in View Report to open a section-jump overlay — dynamically built from report headings, arrow keys to select, Enter to jump
+- **Auth Export Hints:** When entering a new API key or GCP project, the TUI shows the `export` command to persist it across terminal sessions
+- **Resilient Skill Pipeline:** `callModel` retries on all errors across the full model chain; failed generation produces a procedural SKILL.md template instead of dead-end text
+
+### Changed
+- Report and Dashboard viewers exit cleanly to the main menu (no "press any key" interruption)
+- Built-in report viewer replaces glow/bat external tools for consistent UX across all environments
+- "Sophistication Score" renamed to "Maturity Score" in report, scanner output, and TUI
+- Auth Settings: entered credentials are cached in session snapshot for instant re-switching
+- 155 tests (consolidated report viewer cascade tests)
+
+## [3.3.0] - 2026-04-30
+
+### Added
+- **Best Practices Advisor:** New advisory engine evaluates Gemini CLI configs against 8 categories of documented best practices (Policy Hygiene, MCP Governance, GEMINI.md Quality, Skills Optimization, Settings Optimization, Hooks Utilization, Extension Health, Context Architecture)
+- **Maturity Rating:** Environment health displayed as Getting Started → Intermediate → Advanced → Expert (internal score for CI gating)
+- **Doc Links:** Every recommendation links directly to the relevant Gemini CLI repo documentation
+- `lib/advisor.js` — pure-function advisory engine
+- `lib/toml-lite.js` — minimal TOML parser for policy file analysis (zero dependencies)
+- `test/advisor.test.js` — 28 advisory engine tests
+- `test/toml-lite.test.js` — 10 TOML parser tests
+- 156 total tests (up from 118)
+
+### Changed
+- Scanners enriched: `scanSettings` preserves raw settings, `scanPolicies` parses TOML into structured rules, `parseSkillsDir` checks for Gotchas/Validation sections, `scanRepos` detects `.geminiignore`
+- TUI score view now includes advisory section with top 5 recommendations
+- Markdown report includes full advisory section grouped by category
+- API key and GCP project input validation in TUI
+- TUI keypress guard prevents input during active scans
+
 ## [3.2.1] - 2026-04-30
 
 ### Fixed
