@@ -2,50 +2,35 @@
 
 Discover patterns in your Gemini CLI and Claude Code environments. Extract tribal knowledge from how you *actually* use AI coding tools and surface it as reusable skills, agents, and best practices.
 
+## Quick Start
+
+Run the interactive scanner instantly — no install required:
+
+```bash
+npx github:pauldatta/gemini-cli-scanner
+```
+
+This launches an interactive TUI with arrow-key navigation, a score dashboard, and a colorized report viewer.
+
+### Headless mode (CI, scripts, piping)
+
+```bash
+npx github:pauldatta/gemini-cli-scanner/scanner.js --skip-suggestions
+```
+
+---
+
 ## Install as Gemini CLI Extension
+
+If you use the Gemini CLI, install as an extension for `/scan` slash commands:
 
 ```bash
 gemini extensions install https://github.com/pauldatta/gemini-cli-scanner
 ```
 
-That's it. The only dependency (`@google/genai`) is bundled — no manual `npm install` required. Node.js is already present because Gemini CLI requires it.
+The only dependency (`@google/genai`) is bundled — no manual `npm install` required.
 
-### Developer Install (for contributing)
-
-```bash
-git clone https://github.com/pauldatta/gemini-cli-scanner.git
-cd gemini-cli-scanner
-
-# Install from local clone
-gemini extensions install .
-
-# Or symlink for live-editing (changes reflected without reinstall)
-gemini extensions link .
-```
-
-### Configure (optional — for AI skill suggestions)
-
-```bash
-gemini extensions config gemini-cli-scanner
-```
-
-You'll be prompted for:
-- **Google Cloud Project** — for Vertex AI skill suggestions (uses `gcloud auth` ADC)
-- **Google API Key** — alternative to Vertex AI (stored in system keychain)
-
-### What You Get
-
-| Feature | Description |
-|:---|:---|
-| **Context file** | `scanner-GEMINI.md` — teaches Gemini how to use the scanner |
-| **Skill** | `env-scanner` — activated when you ask about environment patterns |
-| **`/scan`** | Custom command to run a full scan with one slash command |
-| **`/scan-repos`** | Custom command to scan with repo paths |
-| **Settings** | `Google Cloud Project` and `Google API Key` stored in system keychain |
-
-### Usage
-
-Use natural language or custom commands:
+Then use natural language or slash commands:
 - *"Scan my environment"* — triggers the `env-scanner` skill
 - `/scan` — runs the scanner and reads the report
 - `/scan-repos ~/Code/project-a ~/Code/project-b` — scans repos too
@@ -61,25 +46,30 @@ This scanner reads your `~/.gemini/`, `~/.claude/`, and any code repos you point
 5. **Score** your environment sophistication (0-105) so you know what capabilities you're leaving on the table
 6. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
 
-## Interactive TUI
-
-For a visual experience with arrow-key navigation, score dashboard, and report viewer:
+## Developer Install
 
 ```bash
-# From cloned repo
-make
-# or
-node tui.js
+git clone https://github.com/pauldatta/gemini-cli-scanner.git
+cd gemini-cli-scanner
+
+# Install from local clone
+gemini extensions install .
+
+# Or symlink for live-editing (changes reflected without reinstall)
+gemini extensions link .
 ```
 
-The TUI provides:
-- **Quick Scan** — environment-only, no API key needed
-- **Full Scan** — with AI-powered skill suggestions
-- **Scan with Repos** — include code repositories
-- **View Report** — colorized markdown in your terminal
-- **View Score** — visual score breakdown with progress bars
+## Configure (optional — for AI skill suggestions)
 
-> The Gemini CLI extension uses the scanner directly via `/scan` — no TUI needed.
+Set one of these environment variables to enable AI-powered skill suggestions:
+
+```bash
+# Option A: Vertex AI (uses gcloud auth ADC)
+export GOOGLE_CLOUD_PROJECT="your-project"
+
+# Option B: API key
+export GOOGLE_API_KEY="your-key"
+```
 
 ## Standalone Usage (headless)
 
