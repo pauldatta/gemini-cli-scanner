@@ -1,6 +1,6 @@
 {
   "name": "gemini-cli-scanner",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Scan Gemini CLI and Claude Code environments to discover patterns and suggest reusable skills",
   "main": "scanner.js",
   "bin": {
