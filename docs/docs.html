@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>gemini-cli-scanner — Documentation</title>
+  <meta name="description" content="Documentation for gemini-cli-scanner — AI environment scanner for Gemini CLI and Claude Code.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-card: #161b22;
+      --bg-elevated: #1c2128;
+      --border: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --accent: #58a6ff;
+      --accent-bright: #79c0ff;
+      --accent-glow: rgba(88, 166, 255, 0.15);
+      --base-background-color: var(--bg-primary);
+      --sidebar-background: var(--bg-primary);
+      --sidebar-nav-link-color--active: var(--accent);
+      --link-color: var(--accent);
+      --heading-color: var(--text-primary);
+      --code-inline-background: var(--bg-card);
+      --code-theme-background: var(--bg-card);
+      --blockquote-border-color: var(--accent);
+    }
+    .sidebar-nav li a { font-size: 0.95rem; }
+    .markdown-section { max-width: 860px; }
+    .markdown-section table { display: table; width: 100%; }
+    /* Back to home link */
+    .home-link {
+      display: block;
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+    }
+    .home-link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: '🔍 gemini-cli-scanner',
+      nameLink: './index.html',
+      repo: 'https://github.com/pauldatta/gemini-cli-scanner',
+      coverpage: false,
+      loadSidebar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      search: {
+        placeholder: 'Search docs...',
+        noData: 'No results',
+        depth: 3,
+      },
+      pagination: {
+        previousText: '← Previous',
+        nextText: 'Next →',
+        crossChapter: true,
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        successText: 'Copied',
+      },
+    };
+  </script>
+  <!-- Docsify core -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <!-- Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <!-- Syntax highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-toml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+</body>
+</html>

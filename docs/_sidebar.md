@@ -1,4 +1,4 @@
-- [Home](/)
+- [← Home](index.html)
 - **Getting Started**
   - [Quick Start](quick-start.md)
   - [Install as Extension](quick-start.md#install-as-extension)
