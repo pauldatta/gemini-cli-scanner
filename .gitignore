@@ -1,0 +1,23 @@
+# Scan results (user-specific, never commit)
+scan-results/
+*.json
+*.md
+!README.md
+!SAMPLE_REPORT.md
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
