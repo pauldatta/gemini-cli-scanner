@@ -76,10 +76,54 @@
       width: 100%;
     }
 
+    /* Scroll hint indicator */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: #8b949e;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      animation: fadeInUp 1.5s ease-out 2s both;
+    }
+    .scroll-hint span {
+      display: block;
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+    }
+    .scroll-chevron {
+      font-size: 1.6rem;
+      line-height: 1;
+      animation: bounceDown 2s ease-in-out infinite;
+    }
+
+    @keyframes bounceDown {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(8px); opacity: 1; }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* CTA button glow */
+    section.cover .cover-main > p:last-of-type a {
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    section.cover .cover-main > p:last-of-type a:hover {
+      box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
       section.cover h1 { font-size: 1.8rem; }
       .promo-video { border-radius: 8px; }
+      .scroll-hint { bottom: 1rem; }
     }
   </style>
 </head>

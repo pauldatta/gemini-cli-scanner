@@ -15,3 +15,8 @@
 [Get Started](#quick-start)
 [GitHub](https://github.com/pauldatta/gemini-cli-scanner)
 [npm](https://www.npmjs.com/package/gemini-cli-scanner)
+
+<div class="scroll-hint">
+  <span>Scroll down for documentation</span>
+  <div class="scroll-chevron">⌄</div>
+</div>
