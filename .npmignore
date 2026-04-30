@@ -1,0 +1,11 @@
+# Don't ship test fixtures or scan results to npm
+test/
+scan-results/
+.gitignore
+CHANGELOG.md
+Makefile
+scanner-GEMINI.md
+skills/
+commands/
+gemini-extension.json
+SAMPLE_REPORT.md

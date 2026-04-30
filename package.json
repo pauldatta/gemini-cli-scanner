@@ -4,8 +4,15 @@
   "description": "Scan Gemini CLI and Claude Code environments to discover patterns and suggest reusable skills",
   "main": "scanner.js",
   "bin": {
-    "gemini-cli-scanner": "./tui.js"
+    "gemini-cli-scanner": "tui.js"
   },
+  "files": [
+    "scanner.js",
+    "tui.js",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "tui": "node tui.js",
     "scan": "node scanner.js",
@@ -18,10 +25,17 @@
     "gemini-cli",
     "gemini-cli-extension",
     "scanner",
-    "ai-tools"
+    "ai-tools",
+    "tui",
+    "terminal"
   ],
   "author": "Paul Datta",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pauldatta/gemini-cli-scanner.git"
+  },
+  "homepage": "https://github.com/pauldatta/gemini-cli-scanner#readme",
   "engines": {
     "node": ">=18.0.0"
   },

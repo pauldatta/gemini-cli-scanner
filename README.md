@@ -4,12 +4,10 @@ Discover patterns in your Gemini CLI and Claude Code environments. Extract triba
 
 ## Quick Start
 
-Run the interactive scanner:
+Run the interactive scanner — no install required:
 
 ```bash
-git clone https://github.com/pauldatta/gemini-cli-scanner.git
-cd gemini-cli-scanner
-node tui.js
+npx gemini-cli-scanner
 ```
 
 This launches an interactive TUI with arrow-key navigation, a score dashboard, and a colorized report viewer.
