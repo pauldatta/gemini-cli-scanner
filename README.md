@@ -151,7 +151,7 @@ node tui.js
 # Headless
 node scanner.js --skip-suggestions
 
-# Run tests (81 tests)
+# Run tests (118 tests)
 make test
 
 # Install as Gemini CLI extension from local clone

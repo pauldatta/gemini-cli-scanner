@@ -2,6 +2,15 @@
 
 All notable changes to gemini-cli-scanner will be documented in this file.
 
+## [3.2.1] - 2026-04-30
+
+### Fixed
+- TUI header now reads version from `package.json` — no more hardcoded version drift
+- Update check suggests `npx gemini-cli-scanner@latest` for npx users
+
+### Changed
+- ASCII art GEMINI banner replaces box-style TUI header
+
 ## [3.2.0] - 2026-04-30
 
 ### Added
