@@ -34,11 +34,11 @@ describe('scanConversations chat-days filter', () => {
 
     const lines = [
       // 2 days ago — should always be included
-      JSON.stringify({ type: 'gemini', model: 'gemini-2.5-pro', toolCalls: [{ name: 'recent_tool' }], tokens: { input: 10, output: 20, cached: 0, thoughts: 0 }, timestamp: daysAgo(2) }),
+      JSON.stringify({ type: 'gemini', model: 'gemini-3-flash-preview', toolCalls: [{ name: 'recent_tool' }], tokens: { input: 10, output: 20, cached: 0, thoughts: 0 }, timestamp: daysAgo(2) }),
       // 10 days ago — excluded by 7-day filter, included by 30-day or no filter
-      JSON.stringify({ type: 'gemini', model: 'gemini-2.5-pro', toolCalls: [{ name: 'older_tool' }], tokens: { input: 30, output: 40, cached: 0, thoughts: 0 }, timestamp: daysAgo(10) }),
+      JSON.stringify({ type: 'gemini', model: 'gemini-3-flash-preview', toolCalls: [{ name: 'older_tool' }], tokens: { input: 30, output: 40, cached: 0, thoughts: 0 }, timestamp: daysAgo(10) }),
       // 60 days ago — excluded by 7 or 30-day filter, included by no filter
-      JSON.stringify({ type: 'gemini', model: 'gemini-2.5-pro', toolCalls: [{ name: 'ancient_tool' }], tokens: { input: 50, output: 60, cached: 0, thoughts: 0 }, timestamp: daysAgo(60) }),
+      JSON.stringify({ type: 'gemini', model: 'gemini-3-flash-preview', toolCalls: [{ name: 'ancient_tool' }], tokens: { input: 50, output: 60, cached: 0, thoughts: 0 }, timestamp: daysAgo(60) }),
     ];
     writeFile(path.join(chatDir, 'session-001.jsonl'), lines.join('\n'));
   });
@@ -238,17 +238,24 @@ describe('CLI flag parsing', () => {
 
 // ─── Model Chain Config ──────────────────────────────────────────────
 
-describe('MODEL_CHAIN configuration', () => {
-  it('suggest.js uses gemini-3 series models only', () => {
+describe('Model chain configuration', () => {
+  it('suggest.js uses gemini-3 series models only (two-stage pipeline)', () => {
     const src = fs.readFileSync(path.join(__dirname, '..', 'lib', 'suggest.js'), 'utf8');
-    const chainMatch = src.match(/MODEL_CHAIN\s*=\s*\[([\s\S]*?)\]/);
-    assert.ok(chainMatch, 'MODEL_CHAIN should be defined');
-    const chain = chainMatch[1];
-    // Should NOT contain gemini-2 or gemini-1.5
-    assert.ok(!chain.includes('gemini-2.'), 'Should not include gemini-2.x models');
-    assert.ok(!chain.includes('gemini-1.5'), 'Should not include deprecated gemini-1.5 models');
-    // Should contain at least gemini-3 models
-    assert.ok(chain.includes('gemini-3'), 'Should include gemini-3 series models');
+
+    // Stage 1: IDENTIFIER_MODELS (flash-lite, cheap)
+    const idMatch = src.match(/IDENTIFIER_MODELS\s*=\s*\[([\s\S]*?)\]/);
+    assert.ok(idMatch, 'IDENTIFIER_MODELS should be defined');
+    assert.ok(!idMatch[1].includes('gemini-2.'), 'Identifier models should not include gemini-2.x');
+    assert.ok(!idMatch[1].includes('gemini-1.5'), 'Identifier models should not include gemini-1.5');
+    assert.ok(idMatch[1].includes('gemini-3'), 'Identifier models should include gemini-3 series');
+
+    // Stage 2: WRITER_MODELS (pro, heavy reasoning)
+    const wrMatch = src.match(/WRITER_MODELS\s*=\s*\[([\s\S]*?)\]/);
+    assert.ok(wrMatch, 'WRITER_MODELS should be defined');
+    assert.ok(!wrMatch[1].includes('gemini-2.'), 'Writer models should not include gemini-2.x');
+    assert.ok(!wrMatch[1].includes('gemini-1.5'), 'Writer models should not include gemini-1.5');
+    assert.ok(wrMatch[1].includes('gemini-3'), 'Writer models should include gemini-3 series');
+    assert.ok(wrMatch[1].includes('pro'), 'Writer models should prefer pro for quality');
   });
 
   it('suggest.js uses global location for Vertex AI', () => {

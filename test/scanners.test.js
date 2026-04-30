@@ -35,14 +35,14 @@ describe('scanSettings', () => {
       mcpServers: {
         myServer: { command: 'npx', args: ['--yes'], env: { API_KEY: 'AIzaSyD-abc123-xyz789_ABCDEFGHIJKLMNOP' } },
       },
-      model: { default: 'gemini-2.5-pro' },
+      model: { default: 'gemini-3-flash-preview' },
       experimental: { grounding: true },
     });
     const result = scanSettings(gdir);
     assert.equal(result.found, true);
     assert.equal(result.mcp_servers.myServer.command, 'npx');
     assert.match(result.mcp_servers.myServer.env.API_KEY, /\[REDACTED-/);
-    assert.equal(result.model.default, 'gemini-2.5-pro');
+    assert.equal(result.model.default, 'gemini-3-flash-preview');
   });
 });
 
@@ -89,7 +89,7 @@ describe('scanAgents', () => {
   it('discovers agents from agents/ dir', () => {
     const gdir = path.join(tmpDir, 'with-agents');
     const agDir = path.join(gdir, 'agents');
-    writeFile(path.join(agDir, 'reviewer.md'), '---\nname: reviewer\ndescription: Reviews code\nmodel: gemini-2.5-pro\n---\n\nYou review code.');
+    writeFile(path.join(agDir, 'reviewer.md'), '---\nname: reviewer\ndescription: Reviews code\nmodel: gemini-3-flash-preview\n---\n\nYou review code.');
     const result = scanAgents(gdir);
     assert.equal(result.length, 1);
     assert.equal(result[0].name, 'reviewer');
@@ -147,8 +147,8 @@ describe('scanConversations', () => {
       { type: 'user', message: 'explain this code', timestamp: '2026-04-01T10:00:00Z' },
     ]);
     const lines = [
-      JSON.stringify({ type: 'gemini', model: 'gemini-2.5-pro', toolCalls: [{ name: 'read_file' }, { name: 'edit_file' }], tokens: { input: 100, output: 200, cached: 50, thoughts: 10 }, timestamp: '2026-04-01T10:00:01Z' }),
-      JSON.stringify({ type: 'gemini', model: 'gemini-2.5-pro', toolCalls: [{ name: 'read_file' }], tokens: { input: 50, output: 100, cached: 0, thoughts: 5 }, timestamp: '2026-04-01T10:00:02Z' }),
+      JSON.stringify({ type: 'gemini', model: 'gemini-3-flash-preview', toolCalls: [{ name: 'read_file' }, { name: 'edit_file' }], tokens: { input: 100, output: 200, cached: 50, thoughts: 10 }, timestamp: '2026-04-01T10:00:01Z' }),
+      JSON.stringify({ type: 'gemini', model: 'gemini-3-flash-preview', toolCalls: [{ name: 'read_file' }], tokens: { input: 50, output: 100, cached: 0, thoughts: 5 }, timestamp: '2026-04-01T10:00:02Z' }),
     ];
     writeFile(path.join(chatDir, 'session-001.jsonl'), lines.join('\n'));
     const result = scanConversations(gdir);
@@ -156,7 +156,7 @@ describe('scanConversations', () => {
     assert.equal(result.total_sessions, 1);
     assert.equal(result.tool_usage_top_20.read_file, 2);
     assert.equal(result.tool_usage_top_20.edit_file, 1);
-    assert.equal(result.models_used['gemini-2.5-pro'], 2);
+    assert.equal(result.models_used['gemini-3-flash-preview'], 2);
     assert.equal(result.total_tokens.input, 150);
     assert.equal(result.user_prompt_count, 1);
   });

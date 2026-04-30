@@ -54,7 +54,7 @@ This scanner reads your `~/.gemini/`, `~/.claude/`, and any code repos you point
 3. **Discover your AI tool ecosystem** — Antigravity, Continue, Windsurf, JetBrains AI, and Claude Code, with cross-tool skill overlap analysis
 4. **Discover repos** recursively under parent directories (up to 3 levels deep by default) — no need to list each repo individually
 5. **Scan code repos** for project-level `.gemini/` and `.claude/` configs — settings.json, skills, agents, GEMINI.md, CLAUDE.md
-6. **Suggest new skills** by feeding your usage patterns to Gemini and identifying repeating workflows that should be automated
+6. **Suggest new skills** using a two-stage AI pipeline — flash-lite identifies patterns, pro writes production-grade SKILL.md files following [agentskills.io](https://agentskills.io) best practices
 7. **Score** your environment sophistication (0-115) so you know what capabilities you're leaving on the table
 8. **Produce** a shareable JSON manifest + markdown report (credentials auto-redacted)
 
@@ -72,7 +72,29 @@ export GOOGLE_API_KEY="your-key"
 
 Without either variable, the scanner still runs — it just skips the AI suggestion step.
 
-The suggestion engine uses a model fallback chain (`gemini-3.1-flash-lite-preview` → `gemini-3.1-pro-preview` → `gemini-3-flash-preview`) so it works even if newer models aren't available in your region yet.
+The suggestion engine uses a **two-stage pipeline** for cost-efficient, high-quality skill generation:
+
+| Stage | Model | Purpose | Tokens |
+|:---|:---|:---|---:|
+| **1. Identify** | `gemini-3.1-flash-lite-preview` | Pattern extraction, candidate selection | ~2K |
+| **2. Write** | `gemini-3.1-pro-preview` | Full SKILL.md generation (parallel) | ~4K each |
+
+Stage 2 fires all skill writes in parallel with a progress bar. Each stage has fallback models if the primary isn't available in your region.
+
+### Skill Quality Standards
+
+Generated skills follow the [Agent Skills specification](https://agentskills.io/skill-creation/best-practices):
+
+- **Procedures over declarations** — reusable methods, not specific answers
+- **Defaults over menus** — one clear approach with escape hatches
+- **Exact tool calls** — concrete tool names, parameters, and commands from your environment
+- **Gotchas sections** — environment-specific traps derived from your usage patterns
+- **Validation loops** — verification steps after every multi-step workflow
+- **Progressive disclosure** — focused SKILL.md with deep detail in `references/`
+
+The scanner pre-clusters your prompts locally into workflow patterns before sending anything to the API, keeping context windows efficient and grounding suggestions in real frequency data.
+
+📖 **[Full methodology: How skills are identified from chat history →](docs/skill-identification.md)**
 
 ## CLI Options
 

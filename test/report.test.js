@@ -119,7 +119,7 @@ describe('generateReport', () => {
         timespan: { earliest: '2026-01-01T00:00:00Z', latest: '2026-04-30T00:00:00Z' },
         total_tokens: { input: 1000, output: 2000, cached: 500, thoughts: 100 },
         tool_usage_top_20: { read_file: 150, edit_file: 80 },
-        models_used: { 'gemini-2.5-pro': 200 },
+        models_used: { 'gemini-3-flash-preview': 200 },
       },
     };
     const report = generateReport(m);
