@@ -10,6 +10,18 @@ const { execSync, spawn } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
+// ─── Dashboard Subcommand ────────────────────────────────────────────
+// npx gemini-cli-scanner dashboard --source ./reports/
+if (process.argv[2] === 'dashboard') {
+  const { startDashboard } = require('./lib/dashboard/server');
+  const srcIdx = process.argv.indexOf('--source');
+  const portIdx = process.argv.indexOf('--port');
+  const sourceDir = srcIdx > -1 ? process.argv[srcIdx + 1] : './reports/';
+  const port = portIdx > -1 ? parseInt(process.argv[portIdx + 1]) : 3847;
+  startDashboard(sourceDir, port);
+  return;
+}
+
 // ─── Colors ──────────────────────────────────────────────────────────
 const C = {
   reset: '\x1b[0m', bold: '\x1b[1m', dim: '\x1b[2m',
