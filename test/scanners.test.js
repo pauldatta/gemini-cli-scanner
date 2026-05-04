@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanConversations } = require('../lib/scanners');
+const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanConversations, scanMemoryTiers, scanSkillExtraction, scanAdminPolicies } = require('../lib/scanners');
 
 let tmpDir;
 
@@ -159,5 +159,164 @@ describe('scanConversations', () => {
     assert.equal(result.models_used['gemini-3-flash-preview'], 2);
     assert.equal(result.total_tokens.input, 150);
     assert.equal(result.user_prompt_count, 1);
+  });
+
+  it('extracts tool chains per session for behavioral patterns', () => {
+    const gdir = path.join(tmpDir, 'with-chains');
+    const chatDir = path.join(gdir, 'tmp', 'chain-project', 'chats');
+    writeJSON(path.join(gdir, 'tmp', 'chain-project', 'logs.json'), []);
+    const lines = [
+      JSON.stringify({ type: 'gemini', toolCalls: [{ name: 'read_file' }, { name: 'edit_file' }], timestamp: '2026-04-01T10:00:01Z' }),
+      JSON.stringify({ type: 'gemini', toolCalls: [{ name: 'run_command' }], timestamp: '2026-04-01T10:00:02Z' }),
+    ];
+    writeFile(path.join(chatDir, 'session-chain.jsonl'), lines.join('\n'));
+    const result = scanConversations(gdir);
+    assert.ok(result.tool_chains);
+    assert.equal(result.tool_chains.length, 1);
+    assert.deepEqual(result.tool_chains[0].chain, ['read_file', 'edit_file', 'run_command']);
+    assert.ok(result.chain_patterns);
+    assert.ok(result.chain_patterns['read_file→edit_file→run_command']);
+  });
+});
+
+describe('scanPolicies v0.40+ fields', () => {
+  it('parses modes, mcpName, denyMessage, and interactive fields', () => {
+    const gdir = path.join(tmpDir, 'v040-pol');
+    const polDir = path.join(gdir, 'policies');
+    const toml = `[[rule]]
+toolName = "ShellTool"
+decision = "deny"
+commandPrefix = "rm -rf"
+priority = 100
+modes = ["yolo", "plan"]
+mcpName = "my-server"
+denyMessage = "Dangerous command blocked"
+interactive = false
+commandRegex = "rm\\s+-rf"
+subagent = "code-review"
+`;
+    writeFile(path.join(polDir, 'safety.toml'), toml);
+    const result = scanPolicies(gdir);
+    assert.equal(result.found, true);
+    const r = result.parsed_rules[0];
+    assert.equal(r.toolName, 'ShellTool');
+    assert.equal(r.decision, 'deny');
+    assert.deepEqual(r.modes, ['yolo', 'plan']);
+    assert.equal(r.mcpName, 'my-server');
+    assert.equal(r.denyMessage, 'Dangerous command blocked');
+    assert.equal(r.interactive, false);
+    // TOML parser preserves the literal string from the file
+    assert.ok(r.commandRegex.includes('rm'));
+    assert.equal(r.subagent, 'code-review');
+  });
+});
+
+describe('scanMemoryTiers', () => {
+  it('detects global GEMINI.md memory (tier 1)', () => {
+    const gdir = path.join(tmpDir, 'mem-global');
+    writeFile(path.join(gdir, 'GEMINI.md'), '# Rules\n- Always use strict mode\n- Prefer TypeScript');
+    const result = scanMemoryTiers(gdir);
+    assert.equal(result.global.found, true);
+    assert.ok(result.global.word_count > 0);
+    assert.equal(result.global.bullet_count, 2);
+    assert.ok(result.summary.tiers_in_use >= 1);
+  });
+
+  it('detects private project memory (tier 2)', () => {
+    const gdir = path.join(tmpDir, 'mem-private');
+    mkdirp(gdir);
+    const memDir = path.join(gdir, 'tmp', 'abc123', 'memory');
+    writeFile(path.join(memDir, 'MEMORY.md'), '- Project uses React\n- Database is PostgreSQL');
+    writeFile(path.join(memDir, 'api-notes.md'), 'API endpoint: /v2/data');
+    const result = scanMemoryTiers(gdir);
+    assert.equal(result.private_projects.length, 1);
+    assert.equal(result.private_projects[0].memory_md.found, true);
+    assert.equal(result.private_projects[0].sibling_files.length, 1);
+    assert.ok(result.summary.total_memory_files >= 2);
+  });
+
+  it('returns empty results when no memory exists', () => {
+    const gdir = path.join(tmpDir, 'mem-empty');
+    mkdirp(gdir);
+    const result = scanMemoryTiers(gdir);
+    assert.equal(result.global.found, false);
+    assert.equal(result.private_projects.length, 0);
+    assert.equal(result.summary.tiers_in_use, 0);
+  });
+
+  it('detects autoMemory from settings.json', () => {
+    const gdir = path.join(tmpDir, 'mem-auto');
+    writeJSON(path.join(gdir, 'settings.json'), { autoMemory: true });
+    const result = scanMemoryTiers(gdir);
+    assert.equal(result.autoMemory.enabled, true);
+  });
+});
+
+describe('scanSkillExtraction', () => {
+  it('returns found:false when no extraction state exists', () => {
+    const gdir = path.join(tmpDir, 'ext-none');
+    mkdirp(gdir);
+    const result = scanSkillExtraction(gdir);
+    assert.equal(result.found, false);
+  });
+
+  it('parses extraction state with run history', () => {
+    const gdir = path.join(tmpDir, 'ext-state');
+    const memDir = path.join(gdir, 'tmp', 'proj1', 'memory');
+    writeJSON(path.join(memDir, '.extraction-state.json'), {
+      runHistory: [
+        { timestamp: '2026-04-01T10:00:00Z', sessionsProcessed: 5, skillsCreated: ['deploy-helper'] },
+        { timestamp: '2026-04-10T12:00:00Z', sessionsProcessed: 3, skillsCreated: ['test-runner'] },
+      ],
+    });
+    const result = scanSkillExtraction(gdir);
+    assert.equal(result.found, true);
+    assert.equal(result.total_runs, 2);
+    assert.equal(result.sessions_processed, 8);
+    assert.equal(result.last_run, '2026-04-10T12:00:00Z');
+    assert.ok(result.skills_created.includes('deploy-helper'));
+    assert.ok(result.skills_created.includes('test-runner'));
+  });
+
+  it('detects inbox skills awaiting approval', () => {
+    const gdir = path.join(tmpDir, 'ext-inbox');
+    const inboxDir = path.join(gdir, 'tmp', 'proj2', 'memory', 'skills', 'new-skill');
+    writeFile(path.join(inboxDir, 'SKILL.md'), '---\nname: new-skill\n---\n# New Skill');
+    const result = scanSkillExtraction(gdir);
+    assert.equal(result.inbox.skills.length, 1);
+    assert.equal(result.inbox.skills[0].name, 'new-skill');
+  });
+
+  it('detects stale extraction lock', () => {
+    const gdir = path.join(tmpDir, 'ext-lock');
+    const memDir = path.join(gdir, 'tmp', 'proj3', 'memory');
+    mkdirp(memDir);
+    // Create a lock file and backdate it
+    const lockPath = path.join(memDir, '.extraction.lock');
+    fs.writeFileSync(lockPath, '');
+    const oldTime = Date.now() - (60 * 60 * 1000); // 1 hour ago
+    fs.utimesSync(lockPath, new Date(oldTime), new Date(oldTime));
+    const result = scanSkillExtraction(gdir);
+    assert.equal(result.stale_lock, true);
+  });
+
+  it('detects pending patch files', () => {
+    const gdir = path.join(tmpDir, 'ext-patches');
+    const skillsDir = path.join(gdir, 'tmp', 'proj4', 'memory', 'skills');
+    writeFile(path.join(skillsDir, 'deploy-helper.patch'), '--- a/SKILL.md\n+++ b/SKILL.md');
+    const result = scanSkillExtraction(gdir);
+    assert.equal(result.inbox.patches.length, 1);
+    assert.equal(result.inbox.patches[0].target, 'deploy-helper');
+  });
+});
+
+describe('scanAdminPolicies', () => {
+  it('returns found:false when system dirs do not exist', () => {
+    const result = scanAdminPolicies();
+    // On most dev machines, the system dirs won't exist
+    // The test validates it doesn't crash and returns a valid structure
+    assert.ok('found' in result);
+    assert.ok('files' in result);
+    assert.ok('rule_count' in result);
   });
 });

@@ -168,6 +168,83 @@ describe('suggest module', () => {
   });
 });
 
+// ─── aggregateToolChains ─────────────────────────────────────────────
+
+describe('aggregateToolChains', () => {
+  const { _testing: { aggregateToolChains } } = require('../lib/suggest');
+
+  it('returns empty array for no chains', () => {
+    assert.deepEqual(aggregateToolChains([]), []);
+    assert.deepEqual(aggregateToolChains(null), []);
+  });
+
+  it('clusters chains by first 3 tools', () => {
+    const chains = [
+      { project: 'a', chain: ['read_file', 'edit_file', 'run_command'] },
+      { project: 'b', chain: ['read_file', 'edit_file', 'run_command', 'git_commit'] },
+      { project: 'a', chain: ['search', 'view_file'] },
+    ];
+    const result = aggregateToolChains(chains);
+    assert.ok(result.length >= 1);
+    const topFP = result[0];
+    assert.equal(topFP.fingerprint, 'read_file→edit_file→run_command');
+    assert.equal(topFP.count, 2);
+    assert.equal(topFP.project_count, 2);
+  });
+
+  it('limits to top 10 clusters', () => {
+    const chains = [];
+    for (let i = 0; i < 20; i++) {
+      chains.push({ project: `p${i}`, chain: [`tool_${i}`, `other_${i}`, `third_${i}`] });
+    }
+    const result = aggregateToolChains(chains);
+    assert.ok(result.length <= 10);
+  });
+});
+
+// ─── checkEvidenceThreshold ──────────────────────────────────────────
+
+describe('checkEvidenceThreshold', () => {
+  const { _testing: { checkEvidenceThreshold } } = require('../lib/suggest');
+
+  it('fails when too few prompts', () => {
+    const result = checkEvidenceThreshold([], [], [{ text: 'x' }]);
+    assert.equal(result.pass, false);
+    assert.ok(result.reason.includes('Only 1'));
+  });
+
+  it('fails when no strong patterns', () => {
+    const prompts = Array.from({ length: 15 }, (_, i) => ({ text: `prompt ${i}` }));
+    const weakPatterns = [{ count: 2, project_count: 1 }];
+    const result = checkEvidenceThreshold(weakPatterns, [], prompts);
+    assert.equal(result.pass, false);
+  });
+
+  it('fails when patterns are single-project', () => {
+    const prompts = Array.from({ length: 15 }, (_, i) => ({ text: `prompt ${i}` }));
+    const patterns = [{ count: 5, project_count: 1 }];
+    const result = checkEvidenceThreshold(patterns, [], prompts);
+    assert.equal(result.pass, false);
+    assert.ok(result.reason.includes('single project'));
+  });
+
+  it('passes when strong multi-project patterns exist', () => {
+    const prompts = Array.from({ length: 15 }, (_, i) => ({ text: `prompt ${i}` }));
+    const patterns = [{ count: 5, project_count: 3 }];
+    const result = checkEvidenceThreshold(patterns, [], prompts);
+    assert.equal(result.pass, true);
+    assert.ok(result.strong_text >= 1);
+  });
+
+  it('passes with strong chain patterns even without text patterns', () => {
+    const prompts = Array.from({ length: 15 }, (_, i) => ({ text: `prompt ${i}` }));
+    const chainPatterns = [{ count: 4, project_count: 2 }];
+    const result = checkEvidenceThreshold([], chainPatterns, prompts);
+    assert.equal(result.pass, true);
+    assert.ok(result.strong_chains >= 1);
+  });
+});
+
 // ─── CLI Flag Parsing ────────────────────────────────────────────────
 
 describe('CLI flag parsing', () => {

@@ -1,109 +1,72 @@
 # Advisory Engine & Maturity Model
 
-The scanner evaluates your environment against **8 categories** of Gemini CLI best practices and produces a maturity score (0–115 points). Each recommendation links directly to official documentation.
+Evaluates your environment against **11 categories** producing a maturity score (0–115 points).
 
-## Advisory Categories
+## Categories
 
 | Category | What's Evaluated | Max Points |
 |:---|:---|---:|
-| **Policy Hygiene** | Policy files present, deny rules for destructive commands, no deprecated `tools.exclude` | 15 |
-| **MCP Governance** | Server allowlists, governance policies per MCP server | 15 |
+| **Policy Hygiene** | Policy files, deny rules, deprecated fields, v0.40+ mode coverage, YOLO safeguards, MCP governance, denyMessage, headless rules | 15 |
+| **MCP Governance** | Server allowlists, per-server governance policies | 15 |
 | **GEMINI.md Quality** | Global context file exists, length, structured sections | 15 |
-| **Skills Optimization** | Skill count, diversity across workflows | 15 |
+| **Skills Optimization** | Skill count, diversity, extraction state health | 15 |
 | **Settings Hardening** | Model pinning, experimental flags, sandbox config | 15 |
-| **Hooks** | Pre/post hooks for tool calls, automation maturity | 10 |
+| **Hooks** | Pre/post hooks for tool calls | 10 |
 | **Extensions** | Extension count, catalog diversity | 15 |
 | **Context Architecture** | `.geminiignore`, repo-level configs, context layering | 15 |
+| **Memory Architecture** | 4-tier memory hierarchy coverage, bloat, cross-duplication, autoMemory | — |
+| **Skill Extraction** | Inbox backlog, extraction activity, stale locks, pending patches | — |
+| **Admin Policies** | System-level policy accessibility | — |
+
+Memory, Extraction, and Admin categories produce advisory recommendations but don't contribute to the numeric score.
 
 ## Maturity Tiers
 
-| Tier | Score Range | Description |
+| Tier | Score | Description |
 |:---|:---|:---|
-| 🌱 Getting Started | 0–29 | Basic installation, minimal configuration |
-| 🔧 Intermediate | 30–59 | Active usage with some governance in place |
-| ⚡ Advanced | 60–89 | Strong policy hygiene, skills, and MCP governance |
-| 🏆 Expert | 90–115 | Full-stack configuration with hooks, extensions, and context architecture |
+| 🌱 Getting Started | 0–29 | Basic installation |
+| 🔧 Intermediate | 30–59 | Active usage, some governance |
+| ⚡ Advanced | 60–89 | Strong policies, skills, MCP governance |
+| 🏆 Expert | 90–115 | Full-stack with hooks, extensions, context architecture |
 
-## Scoring Details
+## v3.5 Advisory Checks
 
-Points are awarded per-category based on the presence and quality of configuration artifacts. The advisory engine runs these checks:
+### Policy Hygiene (v0.40+)
 
-### Policy Hygiene (15 pts)
-- Policy files exist in `~/.gemini/policies/` (+5)
-- At least one deny rule for destructive commands like `rm -rf` (+5)
-- No deprecated `tools.exclude` in settings.json (+5)
+| Check | Severity | Trigger |
+|:---|:---|:---|
+| No approval mode coverage | warning | Rules exist but none specify `modes` |
+| YOLO without safeguards | **critical** | YOLO mode rules found with no deny rules |
+| Plan mode unprotected | warning | No rules scoped to plan mode |
+| Ungoverned MCP servers | warning | MCP servers in settings with no policy rules scoping `mcpName` |
+| Missing denyMessage | info | Deny rules without custom explanation text |
+| No headless-mode rules | info | No rules use `interactive = false` |
+| commandRegex usage | info | Regex patterns in rules (brittleness warning) |
+| Admin policies inaccessible | info | System policy dirs exist but can't be read |
 
-### MCP Governance (15 pts)
-- MCP servers are configured (+5)
-- Governance policies exist for MCP servers (allowlists, `ask_user` rules) (+10)
+### Memory Architecture
 
-### GEMINI.md Quality (15 pts)
-- Global `~/.gemini/GEMINI.md` exists (+5)
-- Content length ≥ 500 characters (+5)
-- Structured sections (headings, lists) (+5)
+| Check | Severity | Trigger |
+|:---|:---|:---|
+| No global memory | warning | `~/.gemini/GEMINI.md` missing |
+| Memory bloat | warning | Any MEMORY.md > 5,000 words |
+| Unused tier | info | Only 1 of 4 tiers in use |
+| Cross-tier duplication | info | Same bullet in global and project memory |
+| autoMemory disabled | info | `settings.json` has `autoMemory: false` or absent |
+| Single-tier usage | info | Only using Tier 1 (global) with no project memory |
 
-### Skills Optimization (15 pts)
-- At least 1 skill installed (+5)
-- 3+ skills across different workflows (+5)
-- Skills use procedures over declarations (+5)
+### Skill Extraction
 
-### Settings Hardening (15 pts)
-- Model explicitly pinned (+5)
-- Experimental flags configured (+5)
-- Sandbox or safety settings present (+5)
+| Check | Severity | Trigger |
+|:---|:---|:---|
+| Inbox backlog | warning | ≥3 skills awaiting approval |
+| Extraction inactive | info | Last run > 14 days ago |
+| Never run | info | No extraction-state.json found |
+| Stale lock | warning | `.extraction.lock` > 30 minutes old |
+| Pending patches | info | Patch files awaiting application |
 
-### Hooks (10 pts)
-- Hook configuration present (+5)
-- Pre/post hooks for tool calls (+5)
+## Output Formats
 
-### Extensions (15 pts)
-- At least 1 extension installed (+5)
-- 3+ extensions for diverse capabilities (+5)
-- Extensions enabled and active (+5)
-
-### Context Architecture (15 pts)
-- `.geminiignore` present in repos (+5)
-- Repo-level `.gemini/` configs detected (+5)
-- Context layering (global + project-level) (+5)
-
-## Viewing Results
-
-### In the TUI
-
-Select **Maturity Dashboard** to see:
-- Your tier and total score with a visual progress bar
-- Per-category score breakdown
-- Quick environment stats (skills, MCP servers, extensions, repos)
-- All advisory recommendations with severity (`warning` / `info`) and doc links
-
-Navigate with `↑`/`↓`/`j`/`k`, page with `PgUp`/`PgDn`/`f`/`b`, press `Esc` to return to the main menu.
-
-### In the Report
-
-Recommendations are included in the markdown report under the **Advisory Recommendations** section. Use the `t` key in the report viewer to jump directly to this section via the dynamic Table of Contents.
-
-### In the JSON Manifest
-
-The `gemini-env-manifest.json` includes a `maturity` object with:
-```json
-{
-  "maturity": {
-    "score": 72,
-    "tier": "Advanced",
-    "breakdown": {
-      "policy_hygiene": { "score": 10, "max": 15 },
-      "mcp_governance": { "score": 15, "max": 15 },
-      ...
-    },
-    "recommendations": [
-      {
-        "category": "policy_hygiene",
-        "severity": "warning",
-        "title": "No deny rule for destructive commands",
-        "detail": "Consider adding a policy rule to deny rm -rf...",
-        "doc_ref": "reference/policy-engine.md"
-      }
-    ]
-  }
-}
-```
+- **TUI**: Maturity Dashboard (scores, breakdown, recommendations)
+- **Report**: Advisory Recommendations section in markdown
+- **JSON**: `maturity` object in `gemini-env-manifest.json` with `score`, `tier`, `breakdown`, `recommendations`

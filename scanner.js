@@ -12,12 +12,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const https = require('node:https');
 const { parseArgs } = require('node:util');
-const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos, scanAntigravity, scanContinue, scanWindsurf, scanJetBrains } = require('./lib/scanners');
+const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos, scanAntigravity, scanContinue, scanWindsurf, scanJetBrains, scanMemoryTiers, scanSkillExtraction, scanAdminPolicies } = require('./lib/scanners');
 const { suggestSkills } = require('./lib/suggest');
 const { computeScore, generateReport } = require('./lib/report');
 const { runAdvisory } = require('./lib/advisor');
 
-const VERSION = '3.3.0';
+const VERSION = '3.5.0';
 const GITHUB_REPO = 'pauldatta/gemini-cli-scanner';
 const SKIP_DIRS = new Set(['node_modules', '.git', 'vendor', '__pycache__', 'dist', 'build', '.next', '.venv', 'venv', '.cache', '.npm', '.yarn', 'coverage', '.terraform']);
 
@@ -145,6 +145,11 @@ async function main() {
   console.log('  → Continue (.continue)...');               m.continue_dev = scanContinue(home);
   console.log('  → Windsurf (.codeium)...');                m.windsurf = scanWindsurf(home);
   console.log('  → JetBrains AI...');                       m.jetbrains = scanJetBrains(home);
+
+  // v3.5 scanners: memory tiers, skill extraction, admin policies
+  console.log('  → Memory tiers (4-tier hierarchy)...');       m.memory_tiers = scanMemoryTiers(gdir);
+  console.log('  → Skill extraction state...');                m.skill_extraction = scanSkillExtraction(gdir);
+  console.log('  → Admin policies (system-level)...');         m.admin_policies = scanAdminPolicies();
 
   if (repoPaths.length) {
     // Discover repos recursively if a path is a directory without .git

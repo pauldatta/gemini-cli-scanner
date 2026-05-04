@@ -1,6 +1,6 @@
 # gemini-cli-scanner
 
-Discover patterns in your Gemini CLI and Claude Code environments. Extract tribal knowledge from how you *actually* use AI coding tools and surface it as reusable skills, agents, and best practices.
+Audit and discover patterns across your AI coding tool ecosystem. Extract tribal knowledge from how you *actually* use AI coding tools and surface it as reusable skills, agents, and best practices.
 
 <p align="center">
   <img src="images/tui-main-menu.png" alt="gemini-cli-scanner TUI" width="520">
@@ -8,12 +8,15 @@ Discover patterns in your Gemini CLI and Claude Code environments. Extract triba
 
 ## What This Does
 
-1. **Catalogs** your MCP servers, skills, extensions, agents, policies, and context files
-2. **Analyzes** conversation history — tools, models, topics, prompt patterns
-3. **Scores maturity** (0–115) across [8 categories](advisory-engine.md) with actionable recommendations
-4. **Discovers ecosystems** — Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI
-5. **Suggests skills** using a [two-stage AI pipeline](skill-suggestions.md) grounded in your real usage data
-6. **Produces** a shareable JSON manifest + markdown report (credentials auto-redacted)
+1. **Catalogs** MCP servers, skills, extensions, agents, policies, and context files
+2. **Audits memory** — maps the [4-tier memory hierarchy](scanning.md#memory-architecture-4-tiers) with bloat and duplication detection
+3. **Audits policies** — v0.40+ rules including modes, mcpName, denyMessage, interactive, commandRegex
+4. **Detects skill extraction** — auto-created skills, inbox backlog, stale locks, pending patches
+5. **Analyzes conversations** — tools, models, topics, prompt patterns, behavioral tool chains
+6. **Scores maturity** (0–115) across [11 categories](advisory-engine.md) with actionable recommendations
+7. **Discovers ecosystems** — Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI
+8. **Suggests skills** using an [evidence-gated AI pipeline](skill-suggestions.md) grounded in real usage data
+9. **Produces** a shareable JSON manifest + markdown report (credentials auto-redacted)
 
 ## Get Started
 
@@ -22,6 +25,12 @@ npx gemini-cli-scanner
 ```
 
 No install required. See [Quick Start](quick-start.md) for full setup details.
+
+## Pipeline
+
+<p align="center">
+  <img src="images/scanner-pipeline.png" alt="Scanner Pipeline Architecture" width="700">
+</p>
 
 ## Maturity Tiers
 

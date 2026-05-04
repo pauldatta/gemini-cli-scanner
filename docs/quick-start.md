@@ -58,7 +58,7 @@ export GOOGLE_API_KEY="your-key"
 
 Without either variable, the scanner still runs — it just skips skill suggestions.
 
-📖 **[Skill suggestion pipeline details →](skill-suggestions.md)**
+
 
 ## CLI Options
 
@@ -98,5 +98,5 @@ Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub 
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
 cd gemini-cli-scanner
 make          # Interactive TUI
-make test     # 155 tests across 9 test files
+make test     # 193 tests across 9 test files
 ```

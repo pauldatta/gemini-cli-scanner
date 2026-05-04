@@ -1,32 +1,32 @@
-# Gemini CLI Scanner Extension
+# Gemini CLI Scanner Extension (v3.5.0)
 
-This extension provides the `env-scanner` skill for discovering patterns in your Gemini CLI and Claude Code environments.
+Provides the `env-scanner` skill for auditing Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, and JetBrains AI environments.
 
-## What it does
+## Capabilities
 
-Scans `~/.gemini/`, `~/.claude/`, and optionally your code repos to:
 - Catalog MCP servers, skills, extensions, agents, policies, and context files
-- Analyze conversation history for tool usage patterns, model preferences, and recurring topics
-- Suggest new reusable skills based on detected repeating workflows
-- Score your environment sophistication (0-105)
-- Scan project-level `.gemini/` and `.claude/` configs from code repos
+- Audit 4-tier memory hierarchy (global, extension, project, private)
+- Detect skill extraction agent activity (auto-created skills, inbox, stale locks)
+- Analyze conversation history for tool usage patterns and behavioral tool chains
+- Suggest reusable skills with evidence-based gating (cost-efficient API usage)
+- Audit v0.40+ policy engine (modes, mcpName, denyMessage, interactive, commandRegex)
+- Silently check system-level admin policies
+- Score environment maturity (0–115) across 11 advisory categories
+- Scan project-level configs from code repos via `--repos`
 
-## Usage
+## Activation Triggers
 
-Ask Gemini to scan your environment:
-- "Scan my Gemini CLI environment"
-- "What skills do I have installed?"
-- "Analyze my AI tool usage patterns"
-- "Suggest new skills based on my workflow"
-- "Scan my Code repos for AI tool configs"
-
-The scanner runs locally, auto-redacts credentials, and produces a JSON manifest + markdown report.
+- "Scan my environment" / "audit my tools" / "analyze my setup"
+- "What skills do I have?" / "show my MCP servers"
+- "Suggest skills based on my workflow"
+- "Check my memory setup" / "audit my policies"
+- "Scan my repos for AI configs"
 
 ## Requirements
 
-- Node.js (already installed with Gemini CLI)
-- For AI skill suggestions: `GOOGLE_API_KEY` env var or `GOOGLE_CLOUD_PROJECT` with `gcloud auth application-default login`
+- Node.js (ships with Gemini CLI)
+- For AI skill suggestions: `GOOGLE_API_KEY` or `GOOGLE_CLOUD_PROJECT` with ADC
 
 ## Privacy
 
-Credentials are auto-redacted. User prompts and topics are included for pattern detection — review the report before sharing externally.
+Credentials auto-redacted. User prompts included for pattern detection — review before sharing.

@@ -4,12 +4,11 @@
   - [Install as Extension](quick-start.md#install-as-extension)
   - [Configuration](quick-start.md#configure)
 - **Features**
+  - [What Gets Scanned](scanning.md)
   - [Advisory Engine](advisory-engine.md)
   - [Skill Suggestions](skill-suggestions.md)
-  - [Scanning Reference](scanning.md)
 - **Guides**
   - [For Teams](teams.md)
-  - [Skill Identification](skill-identification.md)
   - [CLI Options](quick-start.md#cli-options)
 - **Project**
   - [Changelog](https://github.com/pauldatta/gemini-cli-scanner/blob/main/CHANGELOG.md)

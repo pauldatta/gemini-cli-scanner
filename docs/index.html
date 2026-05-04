@@ -174,7 +174,7 @@
     }
     .how-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 1.25rem;
     }
     .how-card {
@@ -261,20 +261,22 @@
 
   <div class="hero">
     <div class="hero-text">
-      <h1>gemini-cli-scanner <span class="version">v3.4.0</span></h1>
-      <p class="hero-tagline">Discover patterns in your Gemini CLI and Claude Code environments.</p>
+      <h1>gemini-cli-scanner <span class="version">v3.5.0</span></h1>
+      <p class="hero-tagline">Audit and discover patterns across your AI coding tool ecosystem.</p>
       <div class="feature-pills">
         <span class="pill">📊 Maturity Scoring</span>
         <span class="pill">🔍 Pattern Detection</span>
         <span class="pill">⚡ Skill Generation</span>
+        <span class="pill">🧠 Memory Audit</span>
+        <span class="pill">🛡️ Policy Engine</span>
       </div>
       <p class="hero-desc">
         Extract tribal knowledge from how you <em>actually</em> use AI coding tools.
-        The scanner reads your conversations, identifies repeating patterns in prompts, tool calls, and workflows,
-        then generates production-ready <strong>SKILL.md</strong> files you can use yourself
-        or share with your team. Get a
-        <a href="docs.html#/advisory-engine">maturity report</a> scoring your
-        environment across <strong>8 categories</strong> with actionable, doc-linked recommendations.
+        Scans your 4-tier memory hierarchy, audits v0.40+ policy governance, detects
+        skill extraction agent activity, and identifies behavioral tool chain patterns.
+        Evidence-gated <strong>SKILL.md</strong> generation ensures quality suggestions.
+        Get a <a href="docs.html#/advisory-engine">maturity report</a> scoring your
+        environment across <strong>11 categories</strong> with actionable, doc-linked recommendations.
       </p>
       <div class="install-box" onclick="copyCmd(this, 'npx gemini-cli-scanner')" title="Click to copy">
         <code>npx gemini-cli-scanner</code>
@@ -298,16 +300,20 @@
     <h2>How It Works</h2>
     <div class="how-grid">
       <div class="how-card">
-        <h3>💬 Scan Conversations</h3>
-        <p>Reads your chat history, tool usage, config files, and multi-tool ecosystem. All processing is local — no data leaves your machine.</p>
+        <h3>💬 Scan & Detect</h3>
+        <p>Reads chat history, tool chains, configs, and a 6-tool ecosystem (Gemini, Claude, Antigravity, Continue, Windsurf, JetBrains). All processing is local.</p>
       </div>
       <div class="how-card">
-        <h3>🤖 AI Pattern Detection</h3>
-        <p>A <a href="docs.html#/skill-suggestions">two-stage Gemini pipeline</a> identifies repeating workflows from your real usage data and generates reusable skill templates.</p>
+        <h3>🧠 Memory & Policy Audit</h3>
+        <p>Maps your <a href="docs.html#/scanning?id=memory-architecture-4-tiers">4-tier memory hierarchy</a>, audits v0.40+ policy rules (modes, mcpName, denyMessage), and detects skill extraction agent health.</p>
+      </div>
+      <div class="how-card">
+        <h3>🤖 Evidence-Gated Suggestions</h3>
+        <p>A <a href="docs.html#/skill-suggestions">two-stage Gemini pipeline</a> with cost-efficient evidence gating — only calls the API when behavioral patterns are strong enough.</p>
       </div>
       <div class="how-card">
         <h3>📋 Maturity Report</h3>
-        <p>Scores your environment <strong>0–115</strong> across <a href="docs.html#/advisory-engine">8 categories</a> — from policy hygiene to MCP governance — with actionable recommendations.</p>
+        <p>Scores your environment <strong>0–115</strong> across <a href="docs.html#/advisory-engine">11 categories</a> — policy hygiene, memory architecture, skill extraction, and more.</p>
       </div>
     </div>
   </div>
