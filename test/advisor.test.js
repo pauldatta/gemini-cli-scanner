@@ -23,26 +23,26 @@ function baseManifest(overrides = {}) {
 // ─── Maturity Rating ─────────────────────────────────────────────────
 
 describe('computeMaturity', () => {
-  it('returns Expert for 0 recommendations', () => {
-    const m = computeMaturity([]);
+  it('returns Expert for high score', () => {
+    const m = computeMaturity([], { total: 110, max: 115 });
     assert.equal(m.label, 'Expert');
-    assert.equal(m.score, 100);
+    assert.equal(m.score, 110);
   });
 
-  it('deducts correctly by severity', () => {
-    const recs = [
-      { severity: 'critical' }, // -10
-      { severity: 'warning' },  // -5
-      { severity: 'info' },     // -1
-    ];
-    const m = computeMaturity(recs);
-    assert.equal(m.score, 84);
-    assert.equal(m.label, 'Advanced');
+  it('tiers correctly based on score percentage', () => {
+    const m = computeMaturity([], { total: 60, max: 115 });
+    assert.equal(m.label, 'Intermediate'); // 60/115 = 52%
+    assert.equal(m.score, 60);
   });
 
-  it('clamps at 0', () => {
-    const recs = Array.from({ length: 15 }, () => ({ severity: 'critical' }));
-    const m = computeMaturity(recs);
+  it('returns Getting Started for zero score', () => {
+    const m = computeMaturity([], { total: 0, max: 115 });
+    assert.equal(m.score, 0);
+    assert.equal(m.label, 'Getting Started');
+  });
+
+  it('handles missing sophistication score gracefully', () => {
+    const m = computeMaturity([]);
     assert.equal(m.score, 0);
     assert.equal(m.label, 'Getting Started');
   });
@@ -261,6 +261,7 @@ describe('advisor: full pipeline', () => {
 
   it('well-configured manifest scores Expert', () => {
     const m = baseManifest({
+      sophistication_score: { total: 105, max: 115 },
       _raw_settings: {
         security: { disableYoloMode: true },
         hooks: { BeforeTool: [{ name: 'test', type: 'command', command: 'echo test' }] },
@@ -268,7 +269,7 @@ describe('advisor: full pipeline', () => {
       skills: [{ name: 'clean-skill', has_skill_md: true, description: 'Does stuff', _has_gotchas: true, _has_validation: true }],
     });
     const result = runAdvisory(m);
-    assert.ok(result.maturity.score >= 90, `Expected Expert score ≥90, got ${result.maturity.score}`);
+    assert.equal(result.maturity.label, 'Expert');
   });
 
   it('all recommendations have doc references', () => {
