@@ -28,6 +28,8 @@ The scanner reads your local AI tool configuration directories — never modifyi
 | `~/.continue/skills/` | Continue skills (symlink-aware) |
 | `~/.codeium/windsurf/skills/` | Windsurf skills (symlink-aware) |
 | `~/Library/.../JetBrains/Air/` | JetBrains AI rules and presence |
+| `.opencode/` | OpenCode config (JSONC), agents, skills, commands, custom tools, plugins, themes, glossary |
+| `AGENTS.md` | OpenCode project context file (analogous to `GEMINI.md`) |
 | **`--repos` paths** | Project-level `.gemini/settings.json`, skills, agents, `GEMINI.md`, `.claude/` configs |
 
 ## Memory Architecture (4 Tiers)
@@ -97,5 +99,6 @@ The scanner detects and reports on multiple AI coding tools:
 - **Continue** — skills (symlink-aware)
 - **Windsurf** — skills (symlink-aware)
 - **JetBrains AI** — rules and presence detection
+- **OpenCode** — config (JSONC), agents, skills, commands, custom tools, plugins, themes, glossary, AGENTS.md
 
 Cross-tool skill overlap analysis highlights where the same workflow is covered by multiple tools, helping you consolidate and standardize.
