@@ -95,6 +95,45 @@ npx gemini-cli-scanner [OPTIONS]
 --skip-update-check   Don't check GitHub for newer versions
 ```
 
+## Team Dashboard
+
+Aggregate scan reports from your team into a single leadership dashboard:
+
+```bash
+# Auto-discovers reports in ./scan-results/, ./reports/, or current dir
+npx gemini-cli-scanner dashboard
+
+# Or point at a specific folder
+npx gemini-cli-scanner dashboard --source ~/team-reports/
+```
+
+Opens a browser dashboard at `http://localhost:3847` showing:
+
+| Section | What It Shows |
+|:---|:---|
+| **Overview Cards** | Team coverage, average maturity score, top risk |
+| **Maturity Distribution** | Expert/Advanced/Intermediate/Getting Started breakdown |
+| **Toolkit Candidates** | Skills and MCP servers shared across engineers — select and assemble into a toolkit spec |
+| **Policy Compliance** | YOLO gaps, missing deny rules, mode coverage |
+| **Tool Chain Patterns** | Behavioral sequences repeated across the team (automation candidates) |
+| **Reporter Scorecards** | Per-engineer score, trend arrows, expandable drill-down |
+
+### How It Works
+
+1. Engineers run `npx gemini-cli-scanner` and save their `gemini-env-manifest.json` to a shared folder
+2. Leader runs `npx gemini-cli-scanner dashboard --source ./that-folder/`
+3. Dashboard reads all manifests, deduplicates, and builds a cumulative `team-state.json`
+4. Click **Sync** to pick up new reports. Click **Assemble** to generate a toolkit spec from selected candidates
+
+### Options
+
+```
+npx gemini-cli-scanner dashboard [OPTIONS]
+
+--source PATH    Folder containing manifest JSON files (auto-discovers if omitted)
+--port PORT      Server port (default: 3847)
+```
+
 ## Output
 
 After running, check `scan-results/`:
@@ -126,7 +165,7 @@ Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub 
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
 cd gemini-cli-scanner
 make          # Interactive TUI
-make test     # 155 tests across 9 test files
+make test     # 211 tests across 10 test files
 ```
 
 ## Contributing
