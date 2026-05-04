@@ -99,7 +99,7 @@ if (process.argv[2] === 'dashboard') {
   const { startDashboard } = require('./lib/dashboard/server');
   const srcIdx = process.argv.indexOf('--source');
   const portIdx = process.argv.indexOf('--port');
-  const sourceDir = srcIdx > -1 ? process.argv[srcIdx + 1] : './reports/';
+  const sourceDir = srcIdx > -1 ? process.argv[srcIdx + 1] : null;
   const port = portIdx > -1 ? parseInt(process.argv[portIdx + 1]) : 3847;
   startDashboard(sourceDir, port);
   // Don't fall through to main()
