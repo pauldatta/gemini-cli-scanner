@@ -553,6 +553,7 @@ async function manageAuth(rl) {
     if (process.stdin.isTTY) process.stdin.setRawMode(true);
 
     const authKeyHandler = async (str, key) => {
+      if (!key) return;
       if (key.ctrl && key.name === 'c') { clear(); process.exit(0); }
       if (key.name === 'escape') {
         process.stdin.removeListener('keypress', authKeyHandler);
@@ -703,6 +704,7 @@ async function main() {
     process.stdin.resume();
 
     process.stdin.on('keypress', async (str, key) => {
+      if (!key) return;
       if (key.ctrl && key.name === 'c') { clear(); process.exit(0); }
       if (inAction) return; // Ignore keypresses while prompts/scans are running
 
