@@ -12,7 +12,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const https = require('node:https');
 const { parseArgs } = require('node:util');
-const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos, scanAntigravity, scanContinue, scanWindsurf, scanJetBrains, scanMemoryTiers, scanSkillExtraction, scanAdminPolicies } = require('./lib/scanners');
+const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos, scanAntigravity, scanContinue, scanWindsurf, scanJetBrains, scanMemoryTiers, scanSkillExtraction, scanAdminPolicies, scanOpenCode } = require('./lib/scanners');
 const { suggestSkills } = require('./lib/suggest');
 const { computeScore, generateReport } = require('./lib/report');
 const { runAdvisory } = require('./lib/advisor');
@@ -159,6 +159,7 @@ async function main() {
   console.log('  → Continue (.continue)...');               m.continue_dev = scanContinue(home);
   console.log('  → Windsurf (.codeium)...');                m.windsurf = scanWindsurf(home);
   console.log('  → JetBrains AI...');                       m.jetbrains = scanJetBrains(home);
+  console.log('  → OpenCode (.opencode)...');                m.opencode = scanOpenCode(home);
 
   // v3.5 scanners: memory tiers, skill extraction, admin policies
   console.log('  → Memory tiers (4-tier hierarchy)...');       m.memory_tiers = scanMemoryTiers(gdir);

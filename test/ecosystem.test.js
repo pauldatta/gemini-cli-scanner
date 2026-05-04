@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { scanAntigravity, scanContinue, scanWindsurf, scanJetBrains, parseSkillsDir } = require('../lib/scanners');
+const { scanAntigravity, scanContinue, scanWindsurf, scanJetBrains, parseSkillsDir, scanOpenCode } = require('../lib/scanners');
 const { computeScore } = require('../lib/report');
 
 let tmpDir;
@@ -164,6 +164,129 @@ describe('scanJetBrains', () => {
     const result = scanJetBrains(home);
     assert.equal(result.found, true);
     assert.deepEqual(result.rules, ['coding-standards.md']);
+  });
+});
+
+// ─── scanOpenCode ────────────────────────────────────────────────────
+
+describe('scanOpenCode', () => {
+  it('returns found:false when .opencode missing', () => {
+    assert.equal(scanOpenCode(path.join(tmpDir, 'no-opencode')).found, false);
+  });
+
+  it('discovers minimal .opencode dir', () => {
+    const home = path.join(tmpDir, 'oc-minimal');
+    mkdirp(path.join(home, '.opencode'));
+    const result = scanOpenCode(home);
+    assert.equal(result.found, true);
+    assert.ok(result.config_dir);
+  });
+
+  it('parses opencode.jsonc with comments and trailing commas', () => {
+    const home = path.join(tmpDir, 'oc-jsonc');
+    const ocDir = path.join(home, '.opencode');
+    writeFile(path.join(ocDir, 'opencode.jsonc'), `{
+  // Main config
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {},
+  "permission": {
+    "edit": {
+      "packages/migration/*": "deny",
+    },
+  },
+  "mcp": {
+    "my-server": { "type": "local", "command": ["npx", "my-mcp"] },
+  },
+  "tools": {
+    "github-triage": false,
+    "custom-tool": true,
+  },
+}`);
+    const result = scanOpenCode(home);
+    assert.equal(result.found, true);
+    assert.deepEqual(result.config.mcp_servers, ['my-server']);
+    assert.deepEqual(result.config.tools_disabled, ['github-triage']);
+    assert.deepEqual(result.config.tools_enabled, ['custom-tool']);
+    assert.ok(result.config.permissions);
+    assert.equal(result.config.has_mcp, true);
+  });
+
+  it('discovers agents with frontmatter', () => {
+    const home = path.join(tmpDir, 'oc-agents');
+    const ocDir = path.join(home, '.opencode');
+    writeFile(path.join(ocDir, 'agent', 'triage.md'),
+      '---\nmode: primary\nhidden: true\nmodel: opencode/gpt-5.4-nano\n---\nYou are a triage agent.');
+    writeFile(path.join(ocDir, 'agent', 'reviewer.md'),
+      '---\nmode: secondary\nmodel: opencode/claude-4\n---\nReview code.\ntools:\n  read: true');
+    const result = scanOpenCode(home);
+    assert.equal(result.agents.length, 2);
+    const triage = result.agents.find(a => a.name === 'triage');
+    assert.equal(triage.model, 'opencode/gpt-5.4-nano');
+    assert.equal(triage.mode, 'primary');
+    assert.equal(triage.hidden, true);
+    const reviewer = result.agents.find(a => a.name === 'reviewer');
+    assert.equal(reviewer.has_tools, true);
+  });
+
+  it('discovers skills with SKILL.md', () => {
+    const home = path.join(tmpDir, 'oc-skills');
+    const ocDir = path.join(home, '.opencode');
+    writeFile(path.join(ocDir, 'skills', 'effect', 'SKILL.md'),
+      '---\nname: effect\ndescription: Work with Effect v4\n---\n# Effect\nUse Effect patterns.');
+    const result = scanOpenCode(home);
+    assert.equal(result.skills.length, 1);
+    assert.equal(result.skills[0].name, 'effect');
+    assert.equal(result.skills[0].source, 'opencode');
+    assert.equal(result.skills[0].description, 'Work with Effect v4');
+  });
+
+  it('discovers commands, custom tools, plugins, and themes', () => {
+    const home = path.join(tmpDir, 'oc-full');
+    const ocDir = path.join(home, '.opencode');
+    // Commands
+    writeFile(path.join(ocDir, 'command', 'commit.md'),
+      '---\ndescription: git commit and push\nmodel: opencode/kimi-k2.5\nsubtask: true\n---\ncommit and push');
+    writeFile(path.join(ocDir, 'command', 'learn.md'),
+      '---\ndescription: learn from code\n---\nStudy the codebase');
+    // Custom tools
+    writeFile(path.join(ocDir, 'tool', 'github-triage.ts'), 'export default {}');
+    // Plugins
+    writeFile(path.join(ocDir, 'plugins', 'tui-smoke.tsx'), '// plugin');
+    // Themes
+    writeFile(path.join(ocDir, 'themes', 'smoke-theme.json'), '{}');
+    const result = scanOpenCode(home);
+    assert.equal(result.commands.length, 2);
+    assert.ok(result.commands.find(c => c.name === 'commit' && c.subtask));
+    assert.deepEqual(result.custom_tools, ['github-triage']);
+    assert.equal(result.plugins.length, 1);
+    assert.deepEqual(result.themes, ['smoke-theme']);
+  });
+
+  it('discovers glossary and TUI config', () => {
+    const home = path.join(tmpDir, 'oc-glossary');
+    const ocDir = path.join(home, '.opencode');
+    writeFile(path.join(ocDir, 'glossary', 'en.md'), '# English');
+    writeFile(path.join(ocDir, 'glossary', 'ja.md'), '# Japanese');
+    writeJSON(path.join(ocDir, 'tui.json'), {
+      plugin: [['./plugins/tui-smoke.tsx', { enabled: false }]]
+    });
+    const result = scanOpenCode(home);
+    assert.equal(result.glossary.count, 2);
+    assert.ok(result.glossary.languages.includes('en'));
+    assert.equal(result.tui_config.has_plugins, true);
+    assert.equal(result.tui_config.plugin_count, 1);
+  });
+
+  it('discovers AGENTS.md context file', () => {
+    const home = path.join(tmpDir, 'oc-agentsmd');
+    const ocDir = path.join(home, '.opencode');
+    mkdirp(ocDir);
+    writeFile(path.join(home, 'AGENTS.md'), '# Project Rules\n## Code Style\n## Testing\nFollow these patterns.');
+    const result = scanOpenCode(home);
+    assert.equal(result.found, true);
+    assert.ok(result.agents_md);
+    assert.ok(result.agents_md.size > 0);
+    assert.deepEqual(result.agents_md.sections, ['Project Rules', 'Code Style', 'Testing']);
   });
 });
 
