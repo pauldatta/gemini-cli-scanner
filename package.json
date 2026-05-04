@@ -18,6 +18,7 @@
     "scan": "node scanner.js",
     "scan:no-ai": "node scanner.js --skip-suggestions",
     "scan:repos": "node scanner.js --repos",
+    "dashboard": "node scanner.js dashboard",
     "version": "node scanner.js --version",
     "test": "node --test test/*.test.js"
   },

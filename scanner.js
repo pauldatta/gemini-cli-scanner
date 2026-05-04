@@ -93,6 +93,20 @@ function checkForUpdates() {
   });
 }
 
+// ─── Dashboard Subcommand ────────────────────────────────────────────
+// Intercept before main scanner runs.
+if (process.argv[2] === 'dashboard') {
+  const { startDashboard } = require('./lib/dashboard/server');
+  const srcIdx = process.argv.indexOf('--source');
+  const portIdx = process.argv.indexOf('--port');
+  const sourceDir = srcIdx > -1 ? process.argv[srcIdx + 1] : './reports/';
+  const port = portIdx > -1 ? parseInt(process.argv[portIdx + 1]) : 3847;
+  startDashboard(sourceDir, port);
+  // Don't fall through to main()
+} else {
+  main().catch(e => { console.error('Fatal error:', e.message); process.exit(1); });
+}
+
 async function main() {
   const { values, positionals } = parseArgs({
     options: {
@@ -196,5 +210,3 @@ async function main() {
   console.log(`\n📊 Maturity Score: ${m.sophistication_score.total}/${m.sophistication_score.max}`);
   console.log(`🩺 Maturity: ${mat.emoji || ''} ${mat.label || 'N/A'} (${m.advisory?.summary?.total || 0} recommendations)`);
 }
-
-main().catch(e => { console.error('Fatal error:', e.message); process.exit(1); });

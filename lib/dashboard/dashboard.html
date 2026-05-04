@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Scanner Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1117;--card:#1a1d2e;--card-hover:#222640;--border:#2a2e42;--text:#e4e4e7;--text-muted:#8b8fa3;--accent:#4285f4;--accent-glow:rgba(66,133,244,.15);--green:#34a853;--yellow:#fbbc04;--red:#ea4335;--blue:#4285f4;--orange:#fa7b17;--purple:#a142f4}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+.mono{font-family:'Roboto Mono',monospace}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid var(--border);background:#12141f}
+header h1{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px}
+header .meta{color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:16px}
+.sync-btn{background:var(--accent);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;transition:all .2s}
+.sync-btn:hover{background:#5a9bf6;transform:translateY(-1px)}
+.sync-btn.syncing{opacity:.6;pointer-events:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* Layout */
+main{padding:24px 32px;max-width:1400px;margin:0 auto}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;transition:all .2s}
+.card:hover{border-color:#3a3e52}
+.card h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px}
+.card .big{font-size:32px;font-weight:700}
+.card .sub{font-size:13px;color:var(--text-muted);margin-top:4px}
+
+/* Section */
+.section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:24px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section h2{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.badge{background:var(--accent-glow);color:var(--accent);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+
+/* Tables */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);padding:8px 12px;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px}
+tr:hover{background:var(--card-hover)}
+tr.clickable{cursor:pointer}
+
+/* Progress bars */
+.bar-track{width:100px;height:6px;background:#252840;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* Maturity pills */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500}
+.pill.expert{background:rgba(52,168,83,.15);color:var(--green)}
+.pill.advanced{background:rgba(66,133,244,.15);color:var(--blue)}
+.pill.intermediate{background:rgba(251,188,4,.15);color:var(--yellow)}
+.pill.starting{background:rgba(234,67,53,.15);color:var(--red)}
+
+/* Trend */
+.trend-up{color:var(--green)}.trend-down{color:var(--red)}.trend-flat{color:var(--text-muted)}
+.stale-badge{color:var(--orange);font-size:11px;margin-left:4px}
+
+/* Checkboxes */
+.check-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.check-row:last-child{border-bottom:none}
+.check-row label{flex:1;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:13px}
+.check-row .adoption{color:var(--text-muted);font-size:12px;min-width:60px}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+
+/* Assemble button */
+.assemble-btn{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;margin-top:12px;transition:all .2s}
+.assemble-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(66,133,244,.3)}
+.assemble-btn:disabled{opacity:.4;cursor:default;transform:none}
+
+/* Detail panel */
+.detail-panel{background:#12141f;border:1px solid var(--border);border-radius:8px;padding:16px;margin:8px 0;display:none;animation:slideDown .2s ease}
+@keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:500px}}
+
+/* Toolkit output */
+.toolkit-output{background:#12141f;border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:12px;white-space:pre-wrap;font-family:'Roboto Mono',monospace;font-size:12px;color:var(--text-muted);display:none}
+
+/* Empty state */
+.empty{text-align:center;padding:48px;color:var(--text-muted)}
+.empty .icon{font-size:48px;margin-bottom:16px}
+
+/* Distribution chart */
+.dist-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:13px}
+.dist-label{min-width:100px}
+.dist-bar{flex:1;height:20px;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:500;min-width:0;transition:width .4s ease}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏢 Team Scanner Dashboard</h1>
+  <div class="meta">
+    <span id="meta-info"></span>
+    <button class="sync-btn" onclick="doSync()">🔄 Sync</button>
+  </div>
+</header>
+
+<main id="app">
+  <div class="empty" id="empty-state" style="display:none">
+    <div class="icon">📂</div>
+    <p>No reports found in source folder.<br>Drop <code>gemini-env-manifest.json</code> files into the source directory and click Sync.</p>
+  </div>
+</main>
+
+<script>
+/*__TEAM_DATA__*/
+
+let DATA = window.__TEAM_DATA__;
+
+function render() {
+  const { state, dashboard } = DATA;
+  const app = document.getElementById('app');
+  const empty = document.getElementById('empty-state');
+
+  if (!dashboard || !dashboard.scorecards || dashboard.scorecards.length === 0) {
+    empty.style.display = 'block';
+    app.innerHTML = '';
+    app.appendChild(empty);
+    updateMeta(state);
+    return;
+  }
+  empty.style.display = 'none';
+
+  const d = dashboard;
+  const s = d.standardization;
+
+  app.innerHTML = `
+    ${renderOverviewCards(d)}
+    <div class="grid-2">
+      ${renderMaturityDist(d.maturity)}
+      ${renderPolicyCompliance(d.policy_compliance, d.scorecards.length)}
+    </div>
+    ${renderStandardization(s, d.scorecards.length)}
+    ${renderToolChains(d.tool_chains)}
+    ${renderScorecards(d.scorecards)}
+  `;
+
+  updateMeta(state);
+}
+
+function updateMeta(state) {
+  const n = Object.keys(state.reporters).length;
+  const total = state.known_report_ids?.length || 0;
+  const lastSync = state.last_sync ? timeAgo(state.last_sync) : 'never';
+  document.getElementById('meta-info').textContent = `${n} reporters • ${total} reports • Synced ${lastSync}`;
+}
+
+function renderOverviewCards(d) {
+  const c = d.coverage;
+  const matClass = pillClass(d.maturity.avg_label);
+  return `<div class="grid-3">
+    <div class="card"><h3>Coverage</h3><div class="big">${c.total_reporters}</div><div class="sub">${c.total_scans} total scans${c.stale ? ` • ${c.stale} stale` : ''}</div></div>
+    <div class="card"><h3>Avg Maturity</h3><div class="big">${d.maturity.avg_score}<span style="font-size:16px;color:var(--text-muted)">/${d.maturity.avg_max}</span></div><div class="sub"><span class="pill ${matClass}">${d.maturity.avg_label}</span></div></div>
+    <div class="card"><h3>Top Risk</h3><div class="big" style="color:var(--orange)">${d.policy_compliance.yolo_unprotected.length}×</div><div class="sub">YOLO unprotected</div></div>
+  </div>`;
+}
+
+function renderMaturityDist(m) {
+  const tiers = [
+    { label: 'Expert', emoji: '🟢', color: 'var(--green)', count: m.distribution.Expert || 0 },
+    { label: 'Advanced', emoji: '🔵', color: 'var(--blue)', count: m.distribution.Advanced || 0 },
+    { label: 'Intermediate', emoji: '🟡', color: 'var(--yellow)', count: m.distribution.Intermediate || 0 },
+    { label: 'Getting Started', emoji: '🟠', color: 'var(--orange)', count: m.distribution['Getting Started'] || 0 },
+  ];
+  const max = Math.max(...tiers.map(t => t.count), 1);
+  const rows = tiers.map(t => `<div class="dist-row">
+    <span class="dist-label">${t.emoji} ${t.label}</span>
+    <div class="dist-bar" style="background:${t.color}22;width:${Math.max((t.count/max)*100, t.count ? 15 : 0)}%"><span style="color:${t.color}">${t.count}</span></div>
+  </div>`).join('');
+  return `<div class="section"><h2>📊 Maturity Distribution</h2><div style="margin-top:12px">${rows}</div></div>`;
+}
+
+function renderPolicyCompliance(pc, n) {
+  const items = [
+    { label: 'YOLO unprotected', reporters: pc.yolo_unprotected, color: 'var(--red)' },
+    { label: 'No rm deny rule', reporters: pc.no_deny_rm, color: 'var(--orange)' },
+    { label: 'No mode-specific rules', reporters: pc.no_modes, color: 'var(--yellow)' },
+    { label: 'No policies at all', reporters: pc.no_policies, color: 'var(--red)' },
+  ];
+  const rows = items.map(i => `<div class="dist-row">
+    <span class="dist-label" style="min-width:160px">${i.reporters.length > 0 ? '⚠️' : '✅'} ${i.label}</span>
+    <div class="dist-bar" style="background:${i.color}22;width:${Math.max((i.reporters.length/n)*100, i.reporters.length ? 15 : 0)}%">
+      <span style="color:${i.color}">${i.reporters.length}/${n}</span>
+    </div>
+  </div>`).join('');
+  return `<div class="section"><h2>🛡️ Policy Compliance</h2><div style="margin-top:12px">${rows}</div></div>`;
+}
+
+function renderStandardization(s, n) {
+  const skillRows = (s.skills || []).map(sk => `<div class="check-row">
+    <label><input type="checkbox" class="sel-skill" value="${esc(sk.name)}">
+    <span>📦 <strong>${esc(sk.name)}</strong></span></label>
+    <span class="adoption">${sk.count}/${n} (${Math.round(sk.adoption*100)}%)</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${sk.adoption*100}%;background:var(--accent)"></div></div>
+  </div>`).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">No shared skills above threshold</div>';
+
+  const mcpRows = (s.mcp_servers || []).map(sv => `<div class="check-row">
+    <label><input type="checkbox" class="sel-mcp" value="${esc(sv.name)}">
+    <span>🔌 <strong>${esc(sv.name)}</strong></span></label>
+    <span class="adoption">${sv.count}/${n} (${Math.round(sv.adoption*100)}%)</span>
+    <span class="badge">${sv.status}</span>
+  </div>`).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">No MCP servers above threshold</div>';
+
+  return `<div class="section">
+    <div class="section-header"><h2>🧰 Engineering Toolkit Candidates</h2></div>
+    <h3 style="font-size:12px;color:var(--text-muted);margin-bottom:8px">SKILLS TO STANDARDIZE</h3>
+    ${skillRows}
+    <h3 style="font-size:12px;color:var(--text-muted);margin:16px 0 8px">MCP SERVER BASELINE</h3>
+    ${mcpRows}
+    <button class="assemble-btn" onclick="doAssemble()">📋 Assemble Selected into Toolkit Spec</button>
+    <div class="toolkit-output" id="toolkit-output"></div>
+  </div>`;
+}
+
+function renderToolChains(chains) {
+  if (!chains || chains.length === 0) return '';
+  const rows = chains.slice(0, 8).map(c => `<tr>
+    <td class="mono">${esc(c.chain)}</td>
+    <td>${c.occurrences}×</td>
+    <td>${c.reporter_count} reporters</td>
+    <td>${c.reporter_count >= 3 ? '<span class="badge">automation candidate</span>' : ''}</td>
+  </tr>`).join('');
+  return `<div class="section">
+    <h2>🔗 Tool Chain Patterns</h2>
+    <table style="margin-top:12px"><thead><tr><th>Chain</th><th>Count</th><th>Spread</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+function renderScorecards(cards) {
+  const rows = cards.map(c => {
+    const matClass = pillClass(c.maturity?.label);
+    const trendClass = c.trend === '↑' ? 'trend-up' : c.trend === '↓' ? 'trend-down' : 'trend-flat';
+    const delta = c.score_delta > 0 ? `+${c.score_delta}` : c.score_delta < 0 ? `${c.score_delta}` : '0';
+    return `<tr class="clickable" onclick="toggleDetail(this,'${esc(c.label)}')">
+      <td><strong>${esc(c.label)}</strong>${c.stale ? '<span class="stale-badge">⚠️ stale</span>' : ''}</td>
+      <td class="mono">${c.score?.total || 0}/${c.score?.max || 115}</td>
+      <td><span class="${trendClass}">${c.trend}${delta}</span></td>
+      <td><span class="pill ${matClass}">${c.maturity?.label || '?'}</span></td>
+      <td>${c.skills_count}</td>
+      <td>${c.mcp_count}</td>
+      <td>${c.policy_count}</td>
+      <td>${timeAgo(c.timestamp)}</td>
+    </tr><tr class="detail-row" style="display:none"><td colspan="8"><div class="detail-panel" id="detail-${esc(c.label)}"></div></td></tr>`;
+  }).join('');
+  return `<div class="section">
+    <h2>👥 Reporter Scorecards</h2>
+    <table style="margin-top:12px"><thead><tr><th>Reporter</th><th>Score</th><th>Trend</th><th>Maturity</th><th>Skills</th><th>MCP</th><th>Policies</th><th>Scanned</th></tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+// ─── Interactions ────────────────────────────────────────────────────
+
+async function doSync() {
+  const btn = document.querySelector('.sync-btn');
+  btn.classList.add('syncing');
+  btn.textContent = '⏳ Syncing...';
+  try {
+    const res = await fetch('/api/sync', { method: 'POST' });
+    DATA = await res.json();
+    render();
+  } catch (e) {
+    console.error('Sync failed:', e);
+  }
+  btn.classList.remove('syncing');
+  btn.textContent = '🔄 Sync';
+}
+
+async function toggleDetail(row, label) {
+  const nextRow = row.nextElementSibling;
+  const panel = nextRow.querySelector('.detail-panel');
+  if (nextRow.style.display === 'table-row') {
+    nextRow.style.display = 'none';
+    panel.style.display = 'none';
+    return;
+  }
+  nextRow.style.display = 'table-row';
+  panel.style.display = 'block';
+
+  const reporter = DATA.state.reporters[label];
+  if (!reporter) { panel.innerHTML = 'No data'; return; }
+  const scan = reporter.scans[0];
+  panel.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div><h3 style="font-size:12px;color:var(--text-muted);margin-bottom:8px">SKILLS</h3>
+        ${(scan.skills||[]).map(s => `<div style="font-size:13px;padding:2px 0">📦 ${esc(s.name)} <span style="color:var(--text-muted)">(${s.source})</span></div>`).join('') || 'None'}
+      </div>
+      <div><h3 style="font-size:12px;color:var(--text-muted);margin-bottom:8px">MCP SERVERS</h3>
+        ${(scan.mcp_servers||[]).map(s => `<div style="font-size:13px;padding:2px 0">🔌 ${esc(s)}</div>`).join('') || 'None'}
+      </div>
+    </div>
+    <div style="margin-top:12px"><h3 style="font-size:12px;color:var(--text-muted);margin-bottom:8px">ADVISORY</h3>
+      <span style="color:var(--red)">●</span> ${scan.advisory_counts?.critical||0} critical &nbsp;
+      <span style="color:var(--orange)">●</span> ${scan.advisory_counts?.warning||0} warnings &nbsp;
+      <span style="color:var(--blue)">●</span> ${scan.advisory_counts?.info||0} info
+    </div>`;
+}
+
+async function doAssemble() {
+  const skills = [...document.querySelectorAll('.sel-skill:checked')].map(c => c.value);
+  const mcp_servers = [...document.querySelectorAll('.sel-mcp:checked')].map(c => c.value);
+  if (skills.length === 0 && mcp_servers.length === 0) return;
+
+  const out = document.getElementById('toolkit-output');
+  out.style.display = 'block';
+  out.textContent = 'Generating toolkit specification...';
+
+  try {
+    const res = await fetch('/api/assemble', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ skills, mcp_servers }),
+    });
+    const data = await res.json();
+    out.textContent = data.toolkit || 'No output generated.';
+  } catch (e) {
+    out.textContent = 'Error: ' + e.message;
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────
+
+function pillClass(label) {
+  if (!label) return 'starting';
+  const l = label.toLowerCase();
+  if (l.includes('expert')) return 'expert';
+  if (l.includes('advanced')) return 'advanced';
+  if (l.includes('intermediate')) return 'intermediate';
+  return 'starting';
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function timeAgo(ts) {
+  if (!ts) return 'never';
+  const ms = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+// ─── Init ────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
