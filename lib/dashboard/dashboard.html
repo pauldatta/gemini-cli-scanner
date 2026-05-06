@@ -87,6 +87,30 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .dist-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:13px}
 .dist-label{min-width:100px}
 .dist-bar{flex:1;height:20px;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:500;min-width:0;transition:width .4s ease}
+
+/* Flyout panel */
+.flyout-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;opacity:0;transition:opacity .2s}
+.flyout-overlay.open{display:block;opacity:1}
+.flyout{position:fixed;top:0;right:-400px;width:380px;height:100vh;background:var(--card);border-left:1px solid var(--border);z-index:101;transition:right .25s ease;display:flex;flex-direction:column;box-shadow:-8px 0 24px rgba(0,0,0,.3)}
+.flyout.open{right:0}
+.flyout-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.flyout-header h3{font-size:14px;font-weight:600}
+.flyout-close{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-muted);padding:4px 10px;cursor:pointer;font-size:13px;transition:all .2s}
+.flyout-close:hover{color:var(--text);border-color:var(--accent)}
+.flyout-search{padding:12px 20px;border-bottom:1px solid var(--border)}
+.flyout-search input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none}
+.flyout-search input:focus{border-color:var(--accent)}
+.flyout-search input::placeholder{color:var(--text-muted)}
+.flyout-body{flex:1;overflow-y:auto;padding:8px 20px}
+.flyout-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.flyout-item:last-child{border-bottom:none}
+.flyout-item .fi-name{font-weight:500;flex:1}
+.flyout-item .fi-meta{color:var(--text-muted);font-size:12px}
+.flyout-count{padding:12px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);text-align:center}
+
+/* Clickable count badges */
+.count-link{color:var(--accent);cursor:pointer;border-bottom:1px dashed var(--accent);transition:all .15s}
+.count-link:hover{color:var(--accent-bright);border-color:var(--accent-bright)}
 </style>
 </head>
 <body>
@@ -98,12 +122,19 @@ input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
   </div>
 </header>
 
-<main id="app">
-  <div class="empty" id="empty-state" style="display:none">
-    <div class="icon">📂</div>
-    <p>No reports found in source folder.<br>Drop <code>gemini-env-manifest.json</code> files into the source directory and click Sync.</p>
+<main id="app"></main>
+
+<!-- Flyout panel -->
+<div class="flyout-overlay" id="flyout-overlay" onclick="closeFlyout()"></div>
+<div class="flyout" id="flyout">
+  <div class="flyout-header">
+    <h3 id="flyout-title">Reporters</h3>
+    <button class="flyout-close" onclick="closeFlyout()">✕ Close</button>
   </div>
-</main>
+  <div class="flyout-search"><input id="flyout-filter" placeholder="Filter reporters..." oninput="filterFlyout()"></div>
+  <div class="flyout-body" id="flyout-body"></div>
+  <div class="flyout-count" id="flyout-count"></div>
+</div>
 
 <script>
 /*__TEAM_DATA__*/
@@ -113,16 +144,12 @@ let DATA = window.__TEAM_DATA__;
 function render() {
   const { state, dashboard } = DATA;
   const app = document.getElementById('app');
-  const empty = document.getElementById('empty-state');
 
   if (!dashboard || !dashboard.scorecards || dashboard.scorecards.length === 0) {
-    empty.style.display = 'block';
-    app.innerHTML = '';
-    app.appendChild(empty);
+    app.innerHTML = `<div class="empty"><div class="icon">📂</div><p>No reports found in source folder.<br>Drop <code>gemini-env-manifest.json</code> files into the source directory and click Sync.</p></div>`;
     updateMeta(state);
     return;
   }
-  empty.style.display = 'none';
 
   const d = dashboard;
   const s = d.standardization;
@@ -166,10 +193,20 @@ function renderMaturityDist(m) {
     { label: 'Getting Started', emoji: '🟠', color: 'var(--orange)', count: m.distribution['Getting Started'] || 0 },
   ];
   const max = Math.max(...tiers.map(t => t.count), 1);
-  const rows = tiers.map(t => `<div class="dist-row">
-    <span class="dist-label">${t.emoji} ${t.label}</span>
-    <div class="dist-bar" style="background:${t.color}22;width:${Math.max((t.count/max)*100, t.count ? 15 : 0)}%"><span style="color:${t.color}">${t.count}</span></div>
-  </div>`).join('');
+  const tierReporters = {};
+  for (const card of DATA.dashboard.scorecards || []) {
+    const t = card.maturity?.label || 'Getting Started';
+    if (!tierReporters[t]) tierReporters[t] = [];
+    tierReporters[t].push(card.label);
+  }
+  const rows = tiers.map(t => {
+    const reps = tierReporters[t.label] || [];
+    const countHtml = reps.length ? `<span class="count-link" onclick="showReporterPanel('${t.label}', ${esc(JSON.stringify(reps))})">${t.count}</span>` : `${t.count}`;
+    return `<div class="dist-row">
+      <span class="dist-label">${t.emoji} ${t.label}</span>
+      <div class="dist-bar" style="background:${t.color}22;width:${Math.max((t.count/max)*100, t.count ? 15 : 0)}%"><span style="color:${t.color}">${countHtml}</span></div>
+    </div>`;
+  }).join('');
   return `<div class="section"><h2>📊 Maturity Distribution</h2><div style="margin-top:12px">${rows}</div></div>`;
 }
 
@@ -180,12 +217,16 @@ function renderPolicyCompliance(pc, n) {
     { label: 'No mode-specific rules', reporters: pc.no_modes, color: 'var(--yellow)' },
     { label: 'No policies at all', reporters: pc.no_policies, color: 'var(--red)' },
   ];
-  const rows = items.map(i => `<div class="dist-row">
-    <span class="dist-label" style="min-width:160px">${i.reporters.length > 0 ? '⚠️' : '✅'} ${i.label}</span>
-    <div class="dist-bar" style="background:${i.color}22;width:${Math.max((i.reporters.length/n)*100, i.reporters.length ? 15 : 0)}%">
-      <span style="color:${i.color}">${i.reporters.length}/${n}</span>
-    </div>
-  </div>`).join('');
+  const rows = items.map(item => {
+    const reps = item.reporters || [];
+    const countHtml = reps.length ? `<span class="count-link" onclick="showReporterPanel('${item.label}', ${esc(JSON.stringify(reps))})">${reps.length}/${n}</span>` : `${reps.length}/${n}`;
+    return `<div class="dist-row">
+      <span class="dist-label" style="min-width:160px">${reps.length > 0 ? '⚠️' : '✅'} ${item.label}</span>
+      <div class="dist-bar" style="background:${item.color}22;width:${Math.max((reps.length/n)*100, reps.length ? 15 : 0)}%">
+        <span style="color:${item.color}">${countHtml}</span>
+      </div>
+    </div>`;
+  }).join('');
   return `<div class="section"><h2>🛡️ Policy Compliance</h2><div style="margin-top:12px">${rows}</div></div>`;
 }
 
@@ -193,14 +234,14 @@ function renderStandardization(s, n) {
   const skillRows = (s.skills || []).map(sk => `<div class="check-row">
     <label><input type="checkbox" class="sel-skill" value="${esc(sk.name)}">
     <span>📦 <strong>${esc(sk.name)}</strong></span></label>
-    <span class="adoption">${sk.count}/${n} (${Math.round(sk.adoption*100)}%)</span>
+    <span class="adoption count-link" onclick="showReporterPanel('Skill: ${esc(sk.name)}', ${esc(JSON.stringify(sk.reporters||[]))})">${sk.count}/${n} (${Math.round(sk.adoption*100)}%)</span>
     <div class="bar-track"><div class="bar-fill" style="width:${sk.adoption*100}%;background:var(--accent)"></div></div>
   </div>`).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">No shared skills above threshold</div>';
 
   const mcpRows = (s.mcp_servers || []).map(sv => `<div class="check-row">
     <label><input type="checkbox" class="sel-mcp" value="${esc(sv.name)}">
     <span>🔌 <strong>${esc(sv.name)}</strong></span></label>
-    <span class="adoption">${sv.count}/${n} (${Math.round(sv.adoption*100)}%)</span>
+    <span class="adoption count-link" onclick="showReporterPanel('MCP: ${esc(sv.name)}', ${esc(JSON.stringify(sv.reporters||[]))})">${sv.count}/${n} (${Math.round(sv.adoption*100)}%)</span>
     <span class="badge">${sv.status}</span>
   </div>`).join('') || '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">No MCP servers above threshold</div>';
 
@@ -220,7 +261,7 @@ function renderToolChains(chains) {
   const rows = chains.slice(0, 8).map(c => `<tr>
     <td class="mono">${esc(c.chain)}</td>
     <td>${c.occurrences}×</td>
-    <td>${c.reporter_count} reporters</td>
+    <td><span class="count-link" onclick="showReporterPanel('Chain: ${esc(c.chain)}', ${esc(JSON.stringify(c.reporters||[]))})">${c.reporter_count} reporters</span></td>
     <td>${c.reporter_count >= 3 ? '<span class="badge">automation candidate</span>' : ''}</td>
   </tr>`).join('');
   return `<div class="section">
@@ -333,7 +374,52 @@ function pillClass(label) {
 
 function esc(s) {
   if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function showReporterPanel(title, reporters) {
+  const overlay = document.getElementById('flyout-overlay');
+  const flyout = document.getElementById('flyout');
+  document.getElementById('flyout-title').textContent = title;
+  document.getElementById('flyout-filter').value = '';
+  window._flyoutReporters = reporters || [];
+  renderFlyoutList(reporters);
+  overlay.classList.add('open');
+  flyout.classList.add('open');
+  document.getElementById('flyout-filter').focus();
+}
+
+function closeFlyout() {
+  document.getElementById('flyout-overlay').classList.remove('open');
+  document.getElementById('flyout').classList.remove('open');
+}
+
+function filterFlyout() {
+  const q = document.getElementById('flyout-filter').value.toLowerCase();
+  const filtered = (window._flyoutReporters || []).filter(r => r.toLowerCase().includes(q));
+  renderFlyoutList(filtered);
+}
+
+function renderFlyoutList(reporters) {
+  const body = document.getElementById('flyout-body');
+  const scorecards = DATA.dashboard?.scorecards || [];
+  if (!reporters.length) {
+    body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted)">No reporters match</div>';
+    document.getElementById('flyout-count').textContent = '0 reporters';
+    return;
+  }
+  body.innerHTML = reporters.map(r => {
+    const card = scorecards.find(c => c.label === r);
+    const score = card ? `${card.score?.total||0}/${card.score?.max||67}` : '—';
+    const mat = card?.maturity?.label || '?';
+    const matCls = pillClass(mat);
+    return `<div class="flyout-item">
+      <span class="fi-name">${esc(r)}</span>
+      <span class="fi-meta mono">${score}</span>
+      <span class="pill ${matCls}" style="font-size:11px;padding:2px 6px">${mat}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('flyout-count').textContent = `${reporters.length} reporter${reporters.length !== 1 ? 's' : ''}`;
 }
 
 function timeAgo(ts) {
