@@ -42,6 +42,40 @@ const ENV_SNAPSHOT = {
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || null,
   GOOGLE_CLOUD_PROJECT: process.env.GOOGLE_CLOUD_PROJECT || null,
 };
+
+// ─── Update Checker (non-blocking) ───────────────────────────────────
+let _updateInfo = null; // { latest, current, updateAvailable }
+
+function checkForUpdate() {
+  const https = require('node:https');
+  const url = `https://registry.npmjs.org/gemini-cli-scanner/latest`;
+  const req = https.get(url, { timeout: 3000 }, (res) => {
+    let body = '';
+    res.on('data', (chunk) => { body += chunk; });
+    res.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        const latest = data.version;
+        if (latest && latest !== PKG_VERSION) {
+          // Simple semver compare: split and compare numerically
+          const cur = PKG_VERSION.split('.').map(Number);
+          const lat = latest.split('.').map(Number);
+          const isNewer = lat[0] > cur[0] || (lat[0] === cur[0] && lat[1] > cur[1]) ||
+            (lat[0] === cur[0] && lat[1] === cur[1] && lat[2] > cur[2]);
+          _updateInfo = { latest, current: PKG_VERSION, updateAvailable: isNewer };
+        } else {
+          _updateInfo = { latest: PKG_VERSION, current: PKG_VERSION, updateAvailable: false };
+        }
+      } catch { _updateInfo = null; }
+    });
+  });
+  req.on('error', () => { /* silently ignore network errors */ });
+  req.on('timeout', () => { req.destroy(); });
+}
+
+// Fire immediately on startup — never blocks
+checkForUpdate();
+
 function clear() { process.stdout.write('\x1b[2J\x1b[H'); }
 
 function printHeader() {
@@ -56,7 +90,12 @@ function printHeader() {
   console.log('');
   const authStatus = getAuthStatus();
   console.log(`  ${C.dim}Discover patterns in your AI coding environment${C.reset}`);
-  console.log(`  ${authStatus}\n`);
+  console.log(`  ${authStatus}`);
+  if (_updateInfo && _updateInfo.updateAvailable) {
+    console.log(`  ${C.yellow}⬆ Update available: ${C.bold}v${_updateInfo.latest}${C.reset}${C.yellow} (current: v${_updateInfo.current})${C.reset}`);
+    console.log(`  ${C.dim}Run: npm i -g gemini-cli-scanner${C.reset}`);
+  }
+  console.log('');
 }
 
 function printMenu(selected) {
@@ -332,30 +371,43 @@ async function viewScore() {
   const pct = Math.round((score.total / score.max) * 100);
   const barLen = 40;
   const filled = Math.round((pct / 100) * barLen);
-  const barColor = pct >= 70 ? C.green : pct >= 40 ? C.yellow : C.red;
-  const bar = `${barColor}${'█'.repeat(filled)}${C.dim}${'░'.repeat(barLen - filled)}${C.reset}`;
+  const tierColor = pct >= 90 ? C.green : pct >= 70 ? C.cyan : pct >= 50 ? C.yellow : C.red;
 
-  L.push(`  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
-  L.push(`  ${C.bold}${C.cyan}📊 Maturity Dashboard${C.reset}`);
-  L.push(`  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
+  // Helper: per-category bar coloring based on individual fill ratio
+  const catBarColor = (ratio) => ratio >= 0.7 ? C.green : ratio >= 0.4 ? C.yellow : C.red;
 
-  if (mat.label) {
-    L.push('');
-    L.push(`  ${mat.emoji || ''} ${C.bold}${mat.label}${C.reset}  ${C.dim}(maturity: ${mat.score || 0}/100)${C.reset}`);
-  }
-  L.push(`  ${bar}  ${C.bold}${score.total}/${score.max}${C.reset}  ${C.dim}(${pct}% capability coverage)${C.reset}`);
-
-  // Score Breakdown
+  // ── Header ──────────────────────────────────────────────────────
   L.push('');
-  L.push(`  ${C.bold}Score Breakdown:${C.reset}`);
-  L.push(`  ${'─'.repeat(45)}`);
+  L.push(`  ${tierColor}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C.reset}`);
+  L.push(`  ${C.bold}📊 Maturity Dashboard${C.reset}`);
+  L.push('');
+  L.push(`  ${mat.emoji || '◆'} ${C.bold}${mat.label || 'Unknown'}${C.reset}${' '.repeat(8)}${C.bold}${tierColor}${score.total}/${score.max}${C.reset}  ${C.dim}(${pct}% capability coverage)${C.reset}`);
+  const bar = `${tierColor}${'█'.repeat(filled)}${C.dim}${'░'.repeat(barLen - filled)}${C.reset}`;
+  L.push(`  ${bar}`);
+  L.push(`  ${tierColor}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C.reset}`);
+
+  // ── Score Breakdown: Infrastructure ────────────────────────────
+  const categories = {
+    infra: {
+      title: '⚡ Infrastructure',
+      keys: ['mcp_servers', 'extensions', 'tool_diversity', 'ecosystem_tools'],
+    },
+    knowledge: {
+      title: '🧠 Knowledge & Skills',
+      keys: ['skills', 'global_context', 'project_context', 'claude_skills', 'cross_tool_skills'],
+    },
+    governance: {
+      title: '🛡️  Governance & Activity',
+      keys: ['policies', 'session_volume'],
+    },
+  };
 
   const labels = {
-    mcp_servers: '🔌 MCP Servers', skills: '🎯 Skills', extensions: '📦 Extensions',
-    global_context: '📝 Global Context', project_context: '📁 Project Context',
-    policies: '🛡️  Policies', tool_diversity: '🔧 Tool Diversity',
-    session_volume: '💬 Session Volume', claude_skills: '🤖 Claude Skills',
-    ecosystem_tools: '🌐 Ecosystem', cross_tool_skills: '🔗 Cross-tool',
+    mcp_servers: 'MCP Servers', skills: 'Skills', extensions: 'Extensions',
+    global_context: 'Global Context', project_context: 'Project Context',
+    policies: 'Policies', tool_diversity: 'Tool Diversity',
+    session_volume: 'Session Volume', claude_skills: 'Claude Skills',
+    ecosystem_tools: 'Ecosystem', cross_tool_skills: 'Cross-tool',
   };
   const maxes = {
     mcp_servers: 20, skills: 15, extensions: 15, global_context: 10,
@@ -363,34 +415,55 @@ async function viewScore() {
     claude_skills: 5, ecosystem_tools: 5, cross_tool_skills: 5,
   };
 
-  for (const [key, val] of Object.entries(score.breakdown)) {
-    const label = labels[key] || key;
-    const max = maxes[key] || 10;
-    const ratio = Math.min(val / max, 1);
-    const miniBar = `${barColor}${'▓'.repeat(Math.round(ratio * 12))}${C.dim}${'░'.repeat(12 - Math.round(ratio * 12))}${C.reset}`;
-    const padded = String(val).padStart(2);
-    L.push(`  ${label.padEnd(22)} ${miniBar}  ${padded}/${max}`);
+  for (const group of Object.values(categories)) {
+    L.push('');
+    L.push(`  ${C.bold}${C.white}${group.title}${C.reset}`);
+    L.push(`  ${C.dim}${'┄'.repeat(48)}${C.reset}`);
+
+    for (const key of group.keys) {
+      const val = score.breakdown[key];
+      if (val === undefined) continue;
+      const label = labels[key] || key;
+      const max = maxes[key] || 10;
+      const ratio = Math.min(val / max, 1);
+      const bColor = catBarColor(ratio);
+      const bLen = 14;
+      const bFill = Math.round(ratio * bLen);
+      const miniBar = `${bColor}${'█'.repeat(bFill)}${C.dim}${'░'.repeat(bLen - bFill)}${C.reset}`;
+      const padded = String(val).padStart(2);
+      const indicator = ratio >= 1 ? `${C.green}✓${C.reset}` : ratio === 0 ? `${C.red}✗${C.reset}` : ' ';
+      L.push(`  ${indicator} ${label.padEnd(20)} ${miniBar}  ${bColor}${padded}${C.reset}${C.dim}/${max}${C.reset}`);
+    }
   }
 
-  // Quick Stats
+  // ── Quick Stats ────────────────────────────────────────────────
   const convos = data.conversations || {};
   if (convos.found) {
     L.push('');
-    L.push(`  ${C.bold}Quick Stats:${C.reset}`);
-    L.push(`  ${'─'.repeat(45)}`);
-    L.push(`  💬 Sessions:    ${C.bold}${convos.total_sessions || 0}${C.reset}`);
+    L.push(`  ${C.bold}${C.white}📈 Activity${C.reset}`);
+    L.push(`  ${C.dim}${'┄'.repeat(48)}${C.reset}`);
+
     const tok = convos.total_tokens || {};
     const totalTok = Object.values(tok).reduce((a, b) => a + b, 0);
-    L.push(`  🔤 Tokens:      ${C.bold}${totalTok.toLocaleString()}${C.reset}`);
+    const sessions = convos.total_sessions || 0;
     const topTool = Object.entries(convos.tool_usage_top_20 || {}).sort((a, b) => b[1] - a[1])[0];
-    if (topTool) L.push(`  🏆 Top tool:    ${C.bold}${topTool[0]}${C.reset} ${C.dim}(${topTool[1]} calls)${C.reset}`);
     const models = Object.entries(convos.models_used || {}).sort((a, b) => b[1] - a[1]);
-    if (models.length) L.push(`  🧠 Top model:   ${C.bold}${models[0][0]}${C.reset} ${C.dim}(${models[0][1]} turns)${C.reset}`);
+
+    const stats = [
+      ['Sessions', `${sessions}`, '💬'],
+      ['Tokens', `${totalTok.toLocaleString()}`, '🔤'],
+    ];
+    if (topTool) stats.push(['Top tool', `${topTool[0]} ${C.dim}(${topTool[1]}×)${C.reset}`, '🏆']);
+    if (models.length) stats.push(['Top model', `${models[0][0]} ${C.dim}(${models[0][1]} turns)${C.reset}`, '🧠']);
+
+    for (const [name, value, icon] of stats) {
+      L.push(`  ${icon} ${name.padEnd(14)} ${C.bold}${value}${C.reset}`);
+    }
   }
 
-  // Advisory Recommendations
+  // ── Advisory Recommendations ───────────────────────────────────
   if (advisory.recommendations && advisory.recommendations.length) {
-    const SICON = { critical: `${C.red}●${C.reset}`, warning: `${C.yellow}▲${C.reset}`, info: `${C.cyan}ℹ${C.reset}` };
+    const SICON = { critical: `${C.red}● CRITICAL${C.reset}`, warning: `${C.yellow}▲ WARNING${C.reset}`, info: `${C.dim}ℹ INFO${C.reset}` };
     const CAT_LABEL = {
       policy_hygiene: '🛡️  Policy Hygiene', mcp_governance: '🔌 MCP Governance',
       gemini_md_quality: '📝 GEMINI.md Quality', skills_optimization: '🎯 Skills',
@@ -398,21 +471,26 @@ async function viewScore() {
       extension_health: '📦 Extensions', context_architecture: '📁 Context',
     };
 
+    const critCount = advisory.summary.critical || 0;
+    const warnCount = advisory.summary.warnings || 0;
+    const infoCount = advisory.summary.info || 0;
+
     L.push('');
-    L.push(`  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
-    L.push(`  ${C.bold}${C.cyan}🩺 Recommendations${C.reset}  ${C.dim}(${advisory.summary.critical} critical, ${advisory.summary.warnings} warnings, ${advisory.summary.info} info)${C.reset}`);
-    L.push(`  ${C.bold}${C.cyan}${'─'.repeat(50)}${C.reset}`);
+    L.push(`  ${C.bold}${C.white}🩺 Recommendations${C.reset}  ${critCount ? `${C.red}${critCount} critical${C.reset}  ` : ''}${warnCount ? `${C.yellow}${warnCount} warnings${C.reset}  ` : ''}${C.dim}${infoCount} info${C.reset}`);
+    L.push(`  ${C.dim}${'┄'.repeat(48)}${C.reset}`);
 
     for (const [category, recs] of Object.entries(advisory.by_category || {})) {
       L.push('');
       L.push(`  ${C.bold}${CAT_LABEL[category] || category}${C.reset}`);
       for (const r of recs) {
-        L.push(`    ${SICON[r.severity] || '·'} ${r.title}`);
-        if (r.reference) L.push(`      ${C.dim}→ ${r.reference}${C.reset}`);
+        const icon = SICON[r.severity] || `${C.dim}·${C.reset}`;
+        L.push(`    ${icon}  ${r.title}`);
+        if (r.reference) L.push(`           ${C.dim}→ ${r.reference}${C.reset}`);
       }
     }
   }
 
+  L.push('');
   return scrollableView(L);
 }
 

@@ -13,7 +13,7 @@ Audit and discover patterns across your AI coding tool ecosystem. Extract tribal
 3. **Audits policies** — v0.40+ rules including modes, mcpName, denyMessage, interactive, commandRegex
 4. **Detects skill extraction** — auto-created skills, inbox backlog, stale locks, pending patches
 5. **Analyzes conversations** — tools, models, topics, prompt patterns, behavioral tool chains
-6. **Scores maturity** (0–115) across [11 categories](advisory-engine.md) with actionable recommendations
+6. **Scores maturity** (0–67) across [11 categories](advisory-engine.md) with actionable recommendations
 7. **Discovers ecosystems** — Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI
 8. **Suggests skills** using an [evidence-gated AI pipeline](skill-suggestions.md) grounded in real usage data
 9. **Produces** a shareable JSON manifest + markdown report (credentials auto-redacted)
@@ -39,6 +39,6 @@ No install required. See [Quick Start](quick-start.md) for full setup details.
 | 🌱 Getting Started | 0–29 | Basic install, minimal config |
 | 🔧 Intermediate | 30–59 | Active usage with some governance |
 | ⚡ Advanced | 60–89 | Strong policies, skills, MCP governance |
-| 🏆 Expert | 90–115 | Full-stack: hooks, extensions, context architecture |
+| 🏆 Expert | 61–67 | Full-stack: hooks, extensions, context architecture |
 
 📖 **[Full scoring breakdown →](advisory-engine.md)**

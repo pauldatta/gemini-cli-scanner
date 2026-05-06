@@ -90,7 +90,7 @@ node ${extensionPath}/scanner.js --output-dir ./scan-results --json-only
 
 After running, read `scan-results/gemini-env-report.md` and present findings:
 
-1. **Maturity Score** (0–115) with tier and breakdown
+1. **Maturity Score** (0–67) with tier and breakdown
 2. **MCP Servers** — configured integrations
 3. **Skills & Extensions** — installed across all tools, with origin tags (Auto/User)
 4. **Memory Architecture** — 4-tier table with word counts and file counts

@@ -324,9 +324,9 @@ describe('cross-tool skill overlap scoring', () => {
     assert.equal(score.breakdown.cross_tool_skills, 2);
   });
 
-  it('max score is now 115', () => {
+  it('max score is 67 (normalized)', () => {
     const m = { settings: {}, skills: [], extensions: {}, global_gemini_md: {}, conversations: {} };
     const score = computeScore(m);
-    assert.equal(score.max, 115);
+    assert.equal(score.max, 67);
   });
 });

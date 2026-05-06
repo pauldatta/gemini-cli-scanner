@@ -24,7 +24,7 @@ No install required. Launches an interactive TUI with:
 | **Quick Scan** | Environment scan, optional repo discovery — no API key needed |
 | **Full Scan** | Everything + AI-powered skill suggestions from your conversation patterns |
 | **View Report** | Scrollable markdown report with `t` for TOC section-jump navigation |
-| **Maturity Dashboard** | Score breakdown (0–115), tier, advisory recommendations |
+| **Maturity Dashboard** | Score breakdown (0–67), tier, advisory recommendations |
 | **Auth Settings** | Credential switching with `export` hints for session persistence |
 
 ### Headless mode
@@ -38,7 +38,7 @@ npx gemini-cli-scanner --repos ~/Code --chat-days 30
 
 1. **Catalogs** your MCP servers, skills, extensions, agents, policies, and context files
 2. **Analyzes** conversation history — tools, models, topics, prompt patterns
-3. **Scores maturity** (0–115) across 8 categories with actionable recommendations
+3. **Scores maturity** (0–67) across 8 categories with actionable recommendations
 4. **Discovers ecosystems** — Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI, OpenCode
 5. **Suggests skills** using a two-stage AI pipeline grounded in your real usage data
 6. **Produces** a shareable JSON manifest + markdown report (credentials auto-redacted)
@@ -52,7 +52,7 @@ The advisory engine evaluates 8 categories and assigns a maturity tier:
 | 🌱 Getting Started | 0–29 | Basic install, minimal config |
 | 🔧 Intermediate | 30–59 | Active usage with some governance |
 | ⚡ Advanced | 60–89 | Strong policies, skills, MCP governance |
-| 🏆 Expert | 90–115 | Full-stack: hooks, extensions, context architecture |
+| 🏆 Expert | 61–67 | Full-stack: hooks, extensions, context architecture |
 
 📖 **[Full scoring breakdown and category details →](docs/advisory-engine.md)**
 

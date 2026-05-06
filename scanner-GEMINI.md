@@ -11,7 +11,7 @@ Provides the `env-scanner` skill for auditing Gemini CLI, Claude Code, Antigravi
 - Suggest reusable skills with evidence-based gating (cost-efficient API usage)
 - Audit v0.40+ policy engine (modes, mcpName, denyMessage, interactive, commandRegex)
 - Silently check system-level admin policies
-- Score environment maturity (0–115) across 11 advisory categories
+- Score environment maturity (0–67) across 11 advisory categories
 - Scan project-level configs from code repos via `--repos`
 
 ## Activation Triggers

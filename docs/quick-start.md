@@ -13,7 +13,7 @@ No install required. Launches an interactive TUI:
 | **Quick Scan** | Environment scan, optional repo discovery — no API key needed |
 | **Full Scan** | Everything + AI-powered skill suggestions from your conversation patterns |
 | **View Report** | Scrollable markdown report with `t` for TOC section-jump navigation |
-| **Maturity Dashboard** | Score breakdown (0–115), tier, advisory recommendations |
+| **Maturity Dashboard** | Score breakdown (0–67), tier, advisory recommendations |
 | **Auth Settings** | Credential switching with `export` hints for session persistence |
 
 ## Headless Mode

@@ -1,6 +1,6 @@
 # Advisory Engine & Maturity Model
 
-Evaluates your environment against **11 categories** producing a maturity score (0–115 points).
+Evaluates your environment against **11 categories** producing a maturity score (0–67 points).
 
 ## Categories
 
@@ -27,7 +27,7 @@ Memory, Extraction, and Admin categories produce advisory recommendations but do
 | 🌱 Getting Started | 0–29 | Basic installation |
 | 🔧 Intermediate | 30–59 | Active usage, some governance |
 | ⚡ Advanced | 60–89 | Strong policies, skills, MCP governance |
-| 🏆 Expert | 90–115 | Full-stack with hooks, extensions, context architecture |
+| 🏆 Expert | 61–67 | Full-stack with hooks, extensions, context architecture |
 
 ## v3.5 Advisory Checks
 

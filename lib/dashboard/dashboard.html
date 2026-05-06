@@ -236,7 +236,7 @@ function renderScorecards(cards) {
     const delta = c.score_delta > 0 ? `+${c.score_delta}` : c.score_delta < 0 ? `${c.score_delta}` : '0';
     return `<tr class="clickable" onclick="toggleDetail(this,'${esc(c.label)}')">
       <td><strong>${esc(c.label)}</strong>${c.stale ? '<span class="stale-badge">⚠️ stale</span>' : ''}</td>
-      <td class="mono">${c.score?.total || 0}/${c.score?.max || 115}</td>
+      <td class="mono">${c.score?.total || 0}/${c.score?.max || 67}</td>
       <td><span class="${trendClass}">${c.trend}${delta}</span></td>
       <td><span class="pill ${matClass}">${c.maturity?.label || '?'}</span></td>
       <td>${c.skills_count}</td>

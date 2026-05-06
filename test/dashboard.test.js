@@ -27,9 +27,9 @@ function makeMockManifest(overrides = {}) {
   return {
     scanner_version: '3.5.0',
     scan_timestamp: '2026-05-04T03:17:56Z',
-    sophistication_score: { total: 90, max: 115 },
+    sophistication_score: { total: 52, max: 67 },
     advisory: {
-      maturity: { label: 'Advanced', emoji: '🔵', score: 90, max: 115 },
+      maturity: { label: 'Advanced', emoji: '🔵', score: 52, max: 67 },
       summary: { critical: 0, warning: 2, info: 10, total: 12 },
     },
     settings: { mcp_servers: { github: {}, 'brave-search': {} } },
@@ -79,7 +79,7 @@ describe('extractSummary', () => {
     const s = extractSummary(makeMockManifest(), 'paul-2026-05-04.json');
     assert.equal(s.reporter_label, 'paul');
     assert.equal(s.scanner_version, '3.5.0');
-    assert.equal(s.score.total, 90);
+    assert.equal(s.score.total, 52);
     assert.equal(s.skills_count, 2);
     assert.equal(s.mcp_count, 2);
     assert.equal(s.yolo_disabled, true);
@@ -191,15 +191,15 @@ describe('buildScorecards', () => {
   it('computes trend from history', () => {
     const scans = [{
       label: 'paul',
-      scan: { score: { total: 100, max: 115 }, maturity: { label: 'Expert' }, skills_count: 5, mcp_count: 3, policy_count: 2, repos_count: 10, timestamp: new Date().toISOString() },
+      scan: { score: { total: 58, max: 67 }, maturity: { label: 'Expert' }, skills_count: 5, mcp_count: 3, policy_count: 2, repos_count: 10, timestamp: new Date().toISOString() },
       history: [
-        { score: { total: 100 }, timestamp: new Date().toISOString() },
-        { score: { total: 80 }, timestamp: new Date(Date.now() - 86400000).toISOString() },
+        { score: { total: 58 }, timestamp: new Date().toISOString() },
+        { score: { total: 45 }, timestamp: new Date(Date.now() - 86400000).toISOString() },
       ],
     }];
     const cards = buildScorecards(scans);
     assert.equal(cards[0].trend, '↑');
-    assert.equal(cards[0].score_delta, 20);
+    assert.equal(cards[0].score_delta, 13);
   });
 });
 

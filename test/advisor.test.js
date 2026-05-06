@@ -24,19 +24,19 @@ function baseManifest(overrides = {}) {
 
 describe('computeMaturity', () => {
   it('returns Expert for high score', () => {
-    const m = computeMaturity([], { total: 110, max: 115 });
+    const m = computeMaturity([], { total: 64, max: 67 });
     assert.equal(m.label, 'Expert');
-    assert.equal(m.score, 110);
+    assert.equal(m.score, 64);
   });
 
   it('tiers correctly based on score percentage', () => {
-    const m = computeMaturity([], { total: 60, max: 115 });
-    assert.equal(m.label, 'Intermediate'); // 60/115 = 52%
-    assert.equal(m.score, 60);
+    const m = computeMaturity([], { total: 35, max: 67 });
+    assert.equal(m.label, 'Intermediate'); // 35/67 = 52%
+    assert.equal(m.score, 35);
   });
 
   it('returns Getting Started for zero score', () => {
-    const m = computeMaturity([], { total: 0, max: 115 });
+    const m = computeMaturity([], { total: 0, max: 67 });
     assert.equal(m.score, 0);
     assert.equal(m.label, 'Getting Started');
   });
@@ -261,7 +261,7 @@ describe('advisor: full pipeline', () => {
 
   it('well-configured manifest scores Expert', () => {
     const m = baseManifest({
-      sophistication_score: { total: 105, max: 115 },
+      sophistication_score: { total: 61, max: 67 },
       _raw_settings: {
         security: { disableYoloMode: true },
         hooks: { BeforeTool: [{ name: 'test', type: 'command', command: 'echo test' }] },

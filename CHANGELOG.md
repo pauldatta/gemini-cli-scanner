@@ -79,7 +79,7 @@ All notable changes to gemini-cli-scanner will be documented in this file.
 - Apache 2.0 `LICENSE` file
 
 ### Changed
-- Sophistication score max raised to 115 (ecosystem bonus)
+- Sophistication score normalized to 0–67 scale (was raw 115)
 
 ## [3.1.0] - 2026-04-30
 
