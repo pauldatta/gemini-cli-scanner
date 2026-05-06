@@ -1,6 +1,6 @@
-# Gemini CLI Scanner Extension (v3.5.0)
+# Gemini CLI Scanner Extension (v3.5.6)
 
-Provides the `env-scanner` skill for auditing Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, and JetBrains AI environments.
+Provides the `env-scanner` skill for auditing Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI, and OpenCode environments.
 
 ## Capabilities
 
@@ -29,4 +29,4 @@ Provides the `env-scanner` skill for auditing Gemini CLI, Claude Code, Antigravi
 
 ## Privacy
 
-Credentials auto-redacted. User prompts included for pattern detection — review before sharing.
+Privacy-by-default (v3.5.6+). Output manifest contains only aggregate counts — no raw prompts, topics, or project names. Use `--include-prompts` to include raw data for local analysis. Credentials auto-redacted. Markdown report retains full detail as a local artifact.

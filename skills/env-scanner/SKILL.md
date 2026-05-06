@@ -1,11 +1,11 @@
 ---
 name: env-scanner
-description: Scan and audit Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, and JetBrains AI environments. Discovers configurations, audits memory tiers, detects skill extraction state, analyzes behavioral tool chains, checks policy governance (v0.40+), and suggests reusable skills with evidence gating. Use when the user wants to analyze their AI setup, audit policies, discover patterns, or generate an environment report.
+description: Scan and audit Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI, and OpenCode environments. Discovers configurations, audits memory tiers, detects skill extraction state, analyzes behavioral tool chains, checks policy governance (v0.40+), and suggests reusable skills with evidence gating. Privacy-by-default — output manifest contains only aggregate counts. Use when the user wants to analyze their AI setup, audit policies, discover patterns, or generate an environment report.
 ---
 
 # Environment Scanner Skill
 
-Runs `gemini-cli-scanner` (v3.5.0) to audit the user's AI coding tool ecosystem.
+Runs `gemini-cli-scanner` (v3.5.6) to audit the user's AI coding tool ecosystem.
 
 ## When to Activate
 
@@ -62,6 +62,7 @@ node ${extensionPath}/scanner.js --output-dir ./scan-results --json-only
 | `--chat-days N` | all | Limit to last N days of history |
 | `--skip-suggestions` | `false` | Skip AI suggestions |
 | `--json-only` | `false` | JSON only, no markdown |
+| `--include-prompts` | `false` | Include raw prompts, topics, project names in manifest |
 | `--skip-update-check` | `false` | Skip GitHub version check |
 
 ## What Gets Scanned
@@ -83,8 +84,10 @@ node ${extensionPath}/scanner.js --output-dir ./scan-results --json-only
 
 ## Output Files
 
-- `scan-results/gemini-env-manifest.json` — Structured data for aggregation
-- `scan-results/gemini-env-report.md` — Human-readable markdown report
+- `scan-results/gemini-env-manifest.json` — Structured data for aggregation (counts-only by default, no raw prompts)
+- `scan-results/gemini-env-report.md` — Human-readable markdown report (always contains full detail)
+
+**Privacy model:** The manifest strips user prompts, thought topics, and project names, replacing them with `user_prompt_count`, `topic_count`, and `project_count`. The AI synthesis pipeline uses full data in-memory before redaction. Pass `--include-prompts` for raw data in the manifest.
 
 ## Reading the Report
 
@@ -103,7 +106,7 @@ After running, read `scan-results/gemini-env-report.md` and present findings:
 
 ## Gotchas
 
-- Auto-redacts credentials but **user prompts are included** — remind user to review before sharing
+- **Privacy by default** — manifest contains only aggregate counts; raw prompts and project names require `--include-prompts`
 - `--repos ~/Code` discovers repos recursively — use `--repo-depth 2` on large directories
 - Without API credentials, scanner runs but skips skill suggestions
 - Evidence gate may skip API calls if conversation history is too sparse (< 10 prompts or patterns only in 1 project)
