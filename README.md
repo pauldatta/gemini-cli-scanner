@@ -92,6 +92,7 @@ npx gemini-cli-scanner [OPTIONS]
 --chat-days N         Only include conversation data from the last N days
 --skip-suggestions    Skip AI skill suggestion (no API key needed)
 --json-only           Output JSON only, no markdown report
+--include-prompts     Include raw prompts, topics, and project names in output manifest
 --skip-update-check   Don't check GitHub for newer versions
 ```
 
@@ -145,7 +146,7 @@ After running, check `scan-results/`:
 
 Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub PATs (`ghp_...`), and any field named `token`, `secret`, `password`, or `api_key`.
 
-**Not redacted:** user prompts, topics, project names. Review output before sharing.
+**Privacy by default (v3.5.6+):** The output manifest (`gemini-env-manifest.json`) contains only aggregate statistics — counts, tool names, model usage, and chain fingerprints. Raw user prompts, thought topics, and project names are not written to disk. The AI skill pipeline uses full data in-memory. Use `--include-prompts` to include raw data for local analysis. The markdown report always retains full detail as a local-only artifact.
 
 **Not touched:** Shell history, browser data, or files outside `~/.gemini/`, `~/.claude/`, and `--repos` paths.
 

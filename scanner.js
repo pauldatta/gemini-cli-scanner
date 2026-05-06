@@ -17,9 +17,53 @@ const { suggestSkills } = require('./lib/suggest');
 const { computeScore, generateReport } = require('./lib/report');
 const { runAdvisory } = require('./lib/advisor');
 
-const VERSION = '3.5.1';
+const VERSION = '3.5.6';
 const GITHUB_REPO = 'pauldatta/gemini-cli-scanner';
 const SKIP_DIRS = new Set(['node_modules', '.git', 'vendor', '__pycache__', 'dist', 'build', '.next', '.venv', 'venv', '.cache', '.npm', '.yarn', 'coverage', '.terraform']);
+
+/**
+ * Strip sensitive user data from manifest for serialization.
+ * Collapses prompt arrays, topics, and project names to aggregate counts.
+ * The in-memory manifest retains full data for AI synthesis and report generation.
+ */
+function collapseForPrivacy(m) {
+  const o = JSON.parse(JSON.stringify(m));
+
+  // Conversations — collapse to counts
+  if (o.conversations) {
+    const c = o.conversations;
+    c.user_prompt_count = c.user_prompt_count || (c.user_prompts || []).length;
+    delete c.user_prompts;
+    c.topic_count = Object.keys(c.thought_topics_top_15 || {}).length;
+    delete c.thought_topics_top_15;
+    c.project_count = Object.keys(c.projects || {}).length;
+    delete c.projects;
+    delete c.tool_chains;
+    // chain_patterns, tool_usage_top_20, models_used, total_tokens — safe, keep as-is
+  }
+
+  // Antigravity brain — collapse prompts
+  if (o.antigravity?.brain_intelligence) {
+    const b = o.antigravity.brain_intelligence;
+    b.user_prompt_count = b.user_prompt_count || (b.user_prompts || []).length;
+    delete b.user_prompts;
+  }
+
+  // Repos — anonymize names, keep capability flags
+  if (o.repos?.length) {
+    o.repo_count = o.repos.length;
+    o.repos = o.repos.map((r, i) => ({
+      name: `repo-${i + 1}`,
+      has_gemini_md: !!r.gemini_md,
+      has_claude_md: !!r.claude_md,
+      has_gemini_config: !!r.gemini_config,
+      has_geminiignore: !!r._has_geminiignore,
+    }));
+  }
+
+  o._privacy = { mode: 'counts-only', version: '1.0' };
+  return o;
+}
 
 /** Returns true if version a is strictly greater than version b (semver). */
 function semverGt(a, b) {
@@ -117,6 +161,7 @@ async function main() {
       'skip-suggestions':   { type: 'boolean', default: false },
       'json-only':          { type: 'boolean', default: false },
       'skip-update-check':  { type: 'boolean', default: false },
+      'include-prompts':    { type: 'boolean', default: false },
       'repos':              { type: 'string', multiple: true, default: [] },
       'chat-days':          { type: 'string', default: '' },
       'repo-depth':         { type: 'string', default: '3' },
@@ -197,11 +242,16 @@ async function main() {
   }
 
   fs.mkdirSync(outdir, { recursive: true });
+
+  // Privacy: serialize counts-only manifest by default, full data with --include-prompts
+  const output = values['include-prompts'] ? m : collapseForPrivacy(m);
   const jp = path.join(outdir, 'gemini-env-manifest.json');
-  fs.writeFileSync(jp, JSON.stringify(m, null, 2));
+  fs.writeFileSync(jp, JSON.stringify(output, null, 2));
+  if (!values['include-prompts']) console.log('  🔒 Privacy mode: manifest contains counts only (use --include-prompts for raw data)');
   console.log(`\n✅ JSON manifest: ${jp}`);
 
   if (!values['json-only']) {
+    // Report uses original `m` — local artifact keeps full detail
     const mp = path.join(outdir, 'gemini-env-report.md');
     fs.writeFileSync(mp, generateReport(m));
     console.log(`✅ Markdown report: ${mp}`);
