@@ -92,6 +92,7 @@ npx gemini-cli-scanner [OPTIONS]
 --chat-days N         Only include conversation data from the last N days
 --skip-suggestions    Skip AI skill suggestion (no API key needed)
 --json-only           Output JSON only, no markdown report
+--no-redact-prompts   Do not redact raw user prompts from the output JSON manifest
 --skip-update-check   Don't check GitHub for newer versions
 ```
 
@@ -145,7 +146,7 @@ After running, check `scan-results/`:
 
 Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub PATs (`ghp_...`), and any field named `token`, `secret`, `password`, or `api_key`.
 
-**Not redacted:** user prompts, topics, project names. Review output before sharing.
+**Not redacted:** topics, project names. User prompts are redacted by default (use `--no-redact-prompts` to include them). Review output before sharing.
 
 **Not touched:** Shell history, browser data, or files outside `~/.gemini/`, `~/.claude/`, and `--repos` paths.
 

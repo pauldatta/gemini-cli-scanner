@@ -120,6 +120,7 @@ async function main() {
       'repos':              { type: 'string', multiple: true, default: [] },
       'chat-days':          { type: 'string', default: '' },
       'repo-depth':         { type: 'string', default: '3' },
+      'redact-prompts':     { type: 'boolean', default: true },
     },
     allowPositionals: true,
     strict: false,
@@ -194,6 +195,12 @@ async function main() {
     });
   } else {
     m.suggested_skills = [];
+  }
+
+  if (values['redact-prompts']) {
+    if (m.conversations?.user_prompts) {
+      m.conversations.user_prompts = m.conversations.user_prompts.map(p => ({ ...p, text: '[REDACTED_FOR_PRIVACY]' }));
+    }
   }
 
   fs.mkdirSync(outdir, { recursive: true });
