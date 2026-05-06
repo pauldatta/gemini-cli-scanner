@@ -93,6 +93,61 @@ describe('extractSummary', () => {
     assert.equal(s.mcp_count, 0);
     assert.equal(s.policy_count, 0);
   });
+
+  it('handles privacy-mode manifest (no conversations)', () => {
+    const m = makeMockManifest();
+    delete m.conversations;
+    const s = extractSummary(m, 'private.json');
+    assert.deepEqual(s.tool_chains, []);
+    assert.equal(s.skills_count, 2);
+    assert.equal(s.mcp_count, 2);
+  });
+
+  it('handles privacy-mode manifest (no settings)', () => {
+    const m = makeMockManifest();
+    delete m.settings;
+    const s = extractSummary(m, 'no-settings.json');
+    assert.equal(s.mcp_count, 0);
+    assert.deepEqual(s.mcp_servers, []);
+  });
+
+  it('handles privacy-mode manifest (no policies)', () => {
+    const m = makeMockManifest();
+    delete m.policies;
+    const s = extractSummary(m, 'no-policies.json');
+    assert.equal(s.policy_count, 0);
+    assert.equal(s.policy_has_deny_rm, false);
+    assert.equal(s.policy_has_modes, false);
+  });
+
+  it('handles privacy-mode manifest (no advisory)', () => {
+    const m = makeMockManifest();
+    delete m.advisory;
+    const s = extractSummary(m, 'no-advisory.json');
+    assert.equal(s.maturity.label, 'Unknown');
+    assert.equal(s.advisory_counts.critical, 0);
+  });
+
+  it('uses repo_count fallback when repos array is deleted', () => {
+    const m = makeMockManifest();
+    delete m.repos;
+    m.repo_count = 5;
+    const s = extractSummary(m, 'counts-only.json');
+    assert.equal(s.repos_count, 5);
+  });
+
+  it('falls back to 0 when both repos and repo_count missing', () => {
+    const m = makeMockManifest();
+    delete m.repos;
+    const s = extractSummary(m, 'no-repos.json');
+    assert.equal(s.repos_count, 0);
+  });
+
+  it('handles skill with missing name', () => {
+    const m = makeMockManifest({ skills: [{ source: 'global' }] });
+    const s = extractSummary(m, 'bad-skill.json');
+    assert.equal(s.skills[0].name, 'unnamed');
+  });
 });
 
 // ─── syncFromSource ──────────────────────────────────────────────────
