@@ -14,9 +14,9 @@ Audit and discover patterns across your AI coding tool ecosystem. Extract tribal
 4. **Detects skill extraction** — auto-created skills, inbox backlog, stale locks, pending patches
 5. **Analyzes conversations** — tools, models, topics, prompt patterns, behavioral tool chains
 6. **Scores maturity** (0–67) across [11 categories](advisory-engine.md) with actionable recommendations
-7. **Discovers ecosystems** — Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI
+7. **Discovers ecosystems** — Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI, OpenCode
 8. **Suggests skills** using an [evidence-gated AI pipeline](skill-suggestions.md) grounded in real usage data
-9. **Produces** a shareable JSON manifest + markdown report (credentials auto-redacted)
+9. **Privacy by default** — output manifest contains only aggregate counts; raw prompts, topics, and project names stay in-memory for AI synthesis but never hit disk unless `--include-prompts` is passed
 
 ## Get Started
 

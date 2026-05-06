@@ -88,7 +88,7 @@ After running, check `scan-results/`:
 
 Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub PATs (`ghp_...`), and any field named `token`, `secret`, `password`, or `api_key`.
 
-**Not redacted:** user prompts, topics, project names. Review output before sharing.
+**Privacy by default (v3.5.6+):** The output manifest contains only aggregate statistics — counts, tool names, and chain fingerprints. Raw prompts, topics, and project names are not written to disk. Use `--include-prompts` to include them for local analysis.
 
 **Not touched:** Shell history, browser data, or files outside `~/.gemini/`, `~/.claude/`, and `--repos` paths.
 
