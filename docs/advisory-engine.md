@@ -24,9 +24,9 @@ Memory, Extraction, and Admin categories produce advisory recommendations but do
 
 | Tier | Score | Description |
 |:---|:---|:---|
-| 🌱 Getting Started | 0–29 | Basic installation |
-| 🔧 Intermediate | 30–59 | Active usage, some governance |
-| ⚡ Advanced | 60–89 | Strong policies, skills, MCP governance |
+| 🌱 Getting Started | 0–33 | Basic installation |
+| 🔧 Intermediate | 34–46 | Active usage, some governance |
+| ⚡ Advanced | 47–60 | Strong policies, skills, MCP governance |
 | 🏆 Expert | 61–67 | Full-stack with hooks, extensions, context architecture |
 
 ## v3.5 Advisory Checks

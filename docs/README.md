@@ -36,9 +36,9 @@ No install required. See [Quick Start](quick-start.md) for full setup details.
 
 | Tier | Score | What It Means |
 |:---|:---|:---|
-| 🌱 Getting Started | 0–29 | Basic install, minimal config |
-| 🔧 Intermediate | 30–59 | Active usage with some governance |
-| ⚡ Advanced | 60–89 | Strong policies, skills, MCP governance |
+| 🌱 Getting Started | 0–33 | Basic install, minimal config |
+| 🔧 Intermediate | 34–46 | Active usage with some governance |
+| ⚡ Advanced | 47–60 | Strong policies, skills, MCP governance |
 | 🏆 Expert | 61–67 | Full-stack: hooks, extensions, context architecture |
 
 📖 **[Full scoring breakdown →](advisory-engine.md)**

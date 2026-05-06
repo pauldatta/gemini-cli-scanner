@@ -49,9 +49,9 @@ The advisory engine evaluates 8 categories and assigns a maturity tier:
 
 | Tier | Score | What It Means |
 |:---|:---|:---|
-| 🌱 Getting Started | 0–29 | Basic install, minimal config |
-| 🔧 Intermediate | 30–59 | Active usage with some governance |
-| ⚡ Advanced | 60–89 | Strong policies, skills, MCP governance |
+| 🌱 Getting Started | 0–33 | Basic install, minimal config |
+| 🔧 Intermediate | 34–46 | Active usage with some governance |
+| ⚡ Advanced | 47–60 | Strong policies, skills, MCP governance |
 | 🏆 Expert | 61–67 | Full-stack: hooks, extensions, context architecture |
 
 📖 **[Full scoring breakdown and category details →](docs/advisory-engine.md)**
@@ -165,7 +165,7 @@ Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub 
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
 cd gemini-cli-scanner
 make          # Interactive TUI
-make test     # 211 tests across 10 test files
+make test     # 219 tests across 10 test files
 ```
 
 ## Contributing
