@@ -2,6 +2,21 @@
 
 All notable changes to gemini-cli-scanner will be documented in this file.
 
+## [3.5.8] - 2026-05-08
+
+### Added
+- **Graceful Degradation:** Scanner no longer crashes when `~/.gemini` is missing — skips Gemini-specific sub-scans, continues with all other ecosystem scanners and repo scanning
+- **CLI Detection Dashboard:** New 🛠️ "CLI Detection" section in the team dashboard shows which AI coding tools (Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI, OpenCode) each reporter has installed, with adoption percentages and clickable reporter flyouts
+- **Installation Banner:** Markdown report displays a prominent warning banner and ecosystem table status (`❌ Not installed`) when Gemini CLI is missing
+- **Manifest Flag:** `gemini_cli_installed` boolean in JSON manifest for downstream consumers
+- **`detected_tools` Array:** Summary extraction now tracks per-reporter AI CLI inventory for team aggregation
+- 18 new tests for graceful degradation, report banners, CLI detection, and tool ecosystem cross-referencing
+- 258 tests across 12 test files (up from 240 across 11)
+- Documentation: "Partial Environments" section in README, "CLI Detection & Mixed Environments" in teams.md
+
+### Changed
+- Scanner exits cleanly with partial results instead of `process.exit(1)` when `~/.gemini` not found
+
 ## [3.4.0] - 2026-04-30
 
 ### Added

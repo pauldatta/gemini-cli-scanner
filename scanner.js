@@ -180,35 +180,68 @@ async function main() {
   // Support both --repos a b and positional args as repo paths
   const repoPaths = [...(values.repos || []), ...positionals];
 
-  if (!fs.existsSync(gdir)) { console.error(`Error: ${gdir} not found`); process.exit(1); }
+  const geminiDirExists = fs.existsSync(gdir);
 
-  console.log(`🔍 Scanning ${gdir}...`);
+  if (!geminiDirExists) {
+    console.log(`⚠️  ${gdir} not found — Gemini CLI may not be installed or has never been run.`);
+    console.log(`   Install it: https://github.com/google-gemini/gemini-cli`);
+    console.log(`   Or point to a different directory: --gemini-dir /path/to/.gemini`);
+    console.log(`   Continuing scan for other AI tools...\n`);
+  }
+
+  console.log(`🔍 Scanning${geminiDirExists ? ` ${gdir}` : ' (partial — no Gemini CLI directory)'}...`);
   if (!values['skip-update-check']) await checkForUpdates();
 
-  const m = { scan_timestamp: new Date().toISOString(), gemini_dir: gdir, scanner_version: VERSION };
+  const m = { scan_timestamp: new Date().toISOString(), gemini_dir: gdir, scanner_version: VERSION, gemini_cli_installed: geminiDirExists };
 
-  console.log('  → Settings & MCP servers...');   m.settings = scanSettings(gdir);
-  console.log('  → Global GEMINI.md...');          m.global_gemini_md = scanGeminiMd(gdir);
-  console.log('  → Gemini skills...');             m.skills = scanSkills(gdir);
-  console.log('  → Custom agents...');             m.agents = scanAgents(gdir);
-  console.log('  → Extensions...');                m.extensions = scanExtensions(gdir);
-  console.log('  → Policies...');                  m.policies = scanPolicies(gdir);
+  if (geminiDirExists) {
+    console.log('  → Settings & MCP servers...');   m.settings = scanSettings(gdir);
+    console.log('  → Global GEMINI.md...');          m.global_gemini_md = scanGeminiMd(gdir);
+    console.log('  → Gemini skills...');             m.skills = scanSkills(gdir);
+    console.log('  → Custom agents...');             m.agents = scanAgents(gdir);
+    console.log('  → Extensions...');                m.extensions = scanExtensions(gdir);
+    console.log('  → Policies...');                  m.policies = scanPolicies(gdir);
+  } else {
+    console.log('  ⏭  Skipping Gemini CLI scans (directory not found)');
+    m.settings = { found: false };
+    m.global_gemini_md = { found: false };
+    m.skills = [];
+    m.agents = [];
+    m.extensions = { found: false, extensions: [] };
+    m.policies = { found: false };
+  }
+
   console.log('  → Claude Code (~/.claude)...');   m.claude = scanClaude(home);
-  if (chatDays) console.log(`  → Conversations (last ${chatDays} days)...`);
-  else console.log('  → Conversations (all history)...');
-  m.conversations = scanConversations(gdir, { chatDays });
-  console.log('  → Project GEMINI.md files...');   m.project_gemini_mds = scanProjectGeminiMds(gdir);
+
+  if (geminiDirExists) {
+    if (chatDays) console.log(`  → Conversations (last ${chatDays} days)...`);
+    else console.log('  → Conversations (all history)...');
+    m.conversations = scanConversations(gdir, { chatDays });
+    console.log('  → Project GEMINI.md files...');   m.project_gemini_mds = scanProjectGeminiMds(gdir);
+  } else {
+    m.conversations = { found: false };
+    m.project_gemini_mds = [];
+  }
 
   // AI Tool Ecosystem
-  console.log('  → Antigravity (brain, skills, MCP)...');  m.antigravity = scanAntigravity(gdir);
+  if (geminiDirExists) {
+    console.log('  → Antigravity (brain, skills, MCP)...');  m.antigravity = scanAntigravity(gdir);
+  } else {
+    m.antigravity = { found: false };
+  }
   console.log('  → Continue (.continue)...');               m.continue_dev = scanContinue(home);
   console.log('  → Windsurf (.codeium)...');                m.windsurf = scanWindsurf(home);
   console.log('  → JetBrains AI...');                       m.jetbrains = scanJetBrains(home);
   console.log('  → OpenCode (.opencode)...');                m.opencode = scanOpenCode(home);
 
   // v3.5 scanners: memory tiers, skill extraction, admin policies
-  console.log('  → Memory tiers (4-tier hierarchy)...');       m.memory_tiers = scanMemoryTiers(gdir);
-  console.log('  → Skill extraction state...');                m.skill_extraction = scanSkillExtraction(gdir);
+  if (geminiDirExists) {
+    console.log('  → Memory tiers (4-tier hierarchy)...');       m.memory_tiers = scanMemoryTiers(gdir);
+    console.log('  → Skill extraction state...');                m.skill_extraction = scanSkillExtraction(gdir);
+  } else {
+    m.memory_tiers = null;
+    m.skill_extraction = null;
+  }
   console.log('  → Admin policies (system-level)...');         m.admin_policies = scanAdminPolicies();
 
   if (repoPaths.length) {

@@ -64,6 +64,17 @@ For `/scan` commands inside Gemini CLI:
 gemini extensions install https://github.com/pauldatta/gemini-cli-scanner
 ```
 
+## Partial Environments
+
+The scanner works even when Gemini CLI is not installed. When `~/.gemini` is missing:
+
+- Gemini-specific sub-scans (settings, skills, conversations, memory) are skipped
+- All other AI tool scans (Claude Code, Windsurf, Continue, JetBrains AI, OpenCode) run normally
+- Repository-level scans (GEMINI.md, CLAUDE.md, local `.gemini/` configs) proceed as usual
+- The report includes a prominent installation banner and the ecosystem table marks Gemini CLI as "❌ Not installed"
+
+This means your team can collect scan reports from everyone — including engineers who haven't adopted Gemini CLI yet — for a complete picture.
+
 ## Configure (for AI skill suggestions)
 
 ```bash
@@ -114,6 +125,7 @@ Opens a browser dashboard at `http://localhost:3847` showing:
 |:---|:---|
 | **Overview Cards** | Team coverage, average maturity score, top risk |
 | **Maturity Distribution** | Expert/Advanced/Intermediate/Getting Started breakdown |
+| **CLI Detection** | Which AI coding tools (Gemini CLI, Claude Code, Windsurf, etc.) are installed per engineer |
 | **Toolkit Candidates** | Skills and MCP servers shared across engineers — select and assemble into a toolkit spec |
 | **Policy Compliance** | YOLO gaps, missing deny rules, mode coverage |
 | **Tool Chain Patterns** | Behavioral sequences repeated across the team (automation candidates) |
@@ -166,7 +178,7 @@ Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub 
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
 cd gemini-cli-scanner
 make          # Interactive TUI
-make test     # 219 tests across 10 test files
+make test     # 258 tests across 12 test files
 ```
 
 ## Contributing

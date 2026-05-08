@@ -160,6 +160,7 @@ function render() {
       ${renderMaturityDist(d.maturity)}
       ${renderPolicyCompliance(d.policy_compliance, d.scorecards.length)}
     </div>
+    ${renderToolEcosystem(d.tool_ecosystem, d.scorecards.length)}
     ${renderStandardization(s, d.scorecards.length)}
     ${renderToolChains(d.tool_chains)}
     ${renderScorecards(d.scorecards)}
@@ -228,6 +229,26 @@ function renderPolicyCompliance(pc, n) {
     </div>`;
   }).join('');
   return `<div class="section"><h2>🛡️ Policy Compliance</h2><div style="margin-top:12px">${rows}</div></div>`;
+}
+
+function renderToolEcosystem(tools, n) {
+  if (!tools || tools.length === 0) return '';
+  const ICONS = { 'Gemini CLI': '💎', 'Claude Code': '🟣', 'Antigravity': '🚀', 'Continue': '🔄', 'Windsurf': '🌊', 'JetBrains AI': '🧠', 'OpenCode': '📟' };
+  const max = Math.max(...tools.map(t => t.count), 1);
+  const rows = tools.map(t => {
+    const icon = ICONS[t.name] || '🔧';
+    const pct = Math.round(t.adoption * 100);
+    return `<div class="dist-row">
+      <span class="dist-label" style="min-width:120px">${icon} ${t.name}</span>
+      <div class="dist-bar" style="background:var(--accent)22;width:${Math.max((t.count/max)*100, 15)}%">
+        <span class="count-link" onclick="showReporterPanel('${esc(t.name)}', ${esc(JSON.stringify(t.reporters))})" style="color:var(--accent)">${t.count}/${n} (${pct}%)</span>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="section">
+    <h2>🛠️ CLI Detection</h2>
+    <div style="margin-top:12px">${rows}</div>
+  </div>`;
 }
 
 function renderStandardization(s, n) {
