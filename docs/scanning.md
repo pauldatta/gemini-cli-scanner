@@ -89,11 +89,17 @@ When you pass a parent directory like `~/Code` to `--repos`, the scanner walks u
 
 Each discovered repo is logged during scanning so you can see exactly what's being processed.
 
+## Partial Environments (v3.5.8+)
+
+When `~/.gemini` is not found, the scanner automatically skips Gemini-specific sub-scans (settings, skills, agents, conversations, memory, policies) and continues with all other ecosystem and repository scans. The JSON manifest includes a `gemini_cli_installed: false` flag, and the markdown report displays a prominent installation banner.
+
+Repository-level scans (`--repos`) still detect project-specific `.gemini/` configurations, `GEMINI.md`, and `CLAUDE.md` files regardless of whether the global CLI directory exists.
+
 ## AI Tool Ecosystem Detection
 
 The scanner detects and reports on multiple AI coding tools:
 
-- **Gemini CLI** — full config, skills, agents, extensions, policies, conversations, memory, extraction state
+- **Gemini CLI** — full config, skills, agents, extensions, policies, conversations, memory, extraction state *(skipped if `~/.gemini` missing)*
 - **Claude Code** — skills, CLAUDE.md, project configs
 - **Antigravity** — brain conversations, knowledge items, MCP servers
 - **Continue** — skills (symlink-aware)

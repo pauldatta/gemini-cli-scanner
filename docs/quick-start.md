@@ -74,6 +74,7 @@ npx gemini-cli-scanner [OPTIONS]
 --chat-days N         Only include conversation data from the last N days
 --skip-suggestions    Skip AI skill suggestion (no API key needed)
 --json-only           Output JSON only, no markdown report
+--include-prompts     Include raw prompts, topics, and project names in output manifest
 --skip-update-check   Don't check GitHub for newer versions
 ```
 
@@ -98,5 +99,5 @@ Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub 
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
 cd gemini-cli-scanner
 make          # Interactive TUI
-make test     # 193 tests across 9 test files
+make test     # 258 tests across 12 test files
 ```

@@ -1,4 +1,4 @@
-# gemini-cli-scanner <small>v3.5.6</small>
+# gemini-cli-scanner <small>v3.5.8</small>
 
 > Your AI coding environment, audited. \
 > Maturity scoring · advisory recommendations · skill generation
