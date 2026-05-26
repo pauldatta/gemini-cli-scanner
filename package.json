@@ -41,6 +41,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@google/genai": "^1.51.0"
+    "@google/genai": "^2.6.0"
   }
 }
