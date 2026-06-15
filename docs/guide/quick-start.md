@@ -31,6 +31,16 @@ npx gemini-cli-scanner --repos ~/Code --repo-depth 4 --json-only
 
 > Pass `--` before flags if npx intercepts them: `npx gemini-cli-scanner -- --skip-suggestions`
 
+## Install as Agent Skill
+
+Install as a reusable skill so your AI assistant can scan on demand:
+
+```bash
+npx skills add pauldatta/gemini-cli-scanner@scan -g -y
+```
+
+Then just ask: *"scan my environment"* or *"audit my setup"*.
+
 ## Install as Extension
 
 For `/scan` commands inside Gemini CLI:

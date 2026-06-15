@@ -43,6 +43,12 @@ features:
 npx gemini-cli-scanner
 ```
 
+Or install as an agent skill:
+
+```bash
+npx skills add pauldatta/gemini-cli-scanner@scan -g -y
+```
+
 Or install as a Gemini CLI extension:
 
 ```bash

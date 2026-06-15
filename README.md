@@ -56,6 +56,16 @@ The advisory engine evaluates 11 categories and assigns a maturity tier:
 
 📖 **[Full scoring breakdown and category details →](docs/advisory-engine.md)**
 
+## Install as Agent Skill
+
+Install as a reusable agent skill so your AI assistant knows how to scan on demand:
+
+```bash
+npx skills add pauldatta/gemini-cli-scanner@scan -g -y
+```
+
+Then just ask: *"scan my environment"* or *"audit my setup"*.
+
 ## Install as Extension
 
 For `/scan` commands inside Gemini CLI:
