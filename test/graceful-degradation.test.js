@@ -127,7 +127,7 @@ describe('generateReport with missing Gemini CLI', () => {
   it('produces valid markdown header even when Gemini CLI missing', () => {
     const m = { ...MISSING_GEMINI_MANIFEST, sophistication_score: computeScore(MISSING_GEMINI_MANIFEST) };
     const report = generateReport(m);
-    assert.ok(report.startsWith('# Gemini CLI Environment Scan Report'));
+    assert.ok(report.startsWith('# AI Coding Environment Scan Report'));
   });
 });
 

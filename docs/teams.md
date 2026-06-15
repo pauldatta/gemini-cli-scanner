@@ -40,7 +40,7 @@ For organizations deploying Gemini CLI at scale:
 
 ## CLI Detection & Mixed Environments
 
-The dashboard includes a **CLI Detection** section showing which AI coding tools each team member has installed (Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI, OpenCode). Click any tool's adoption count to see exactly which reporters have it.
+The dashboard includes a **CLI Detection** section showing which AI coding tools each team member has installed (Gemini CLI, Claude Code, Antigravity Desktop, Antigravity CLI, Antigravity IDE, Continue, Windsurf, JetBrains AI, OpenCode). Click any tool's adoption count to see exactly which reporters have it.
 
 Engineers **without Gemini CLI installed** can still run the scanner — it skips Gemini-specific sub-scans and reports on their other tools and repository configurations. This is useful for:
 

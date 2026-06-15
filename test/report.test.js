@@ -73,7 +73,7 @@ describe('generateReport', () => {
   it('produces valid markdown with header', () => {
     const m = { ...MINIMAL_MANIFEST, sophistication_score: computeScore(MINIMAL_MANIFEST) };
     const report = generateReport(m);
-    assert.ok(report.startsWith('# Gemini CLI Environment Scan Report'));
+    assert.ok(report.startsWith('# AI Coding Environment Scan Report'));
     assert.ok(report.includes('Maturity Score: 0/67'));
   });
 

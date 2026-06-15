@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { scanAntigravity, scanContinue, scanWindsurf, scanJetBrains, parseSkillsDir, scanOpenCode } = require('../lib/scanners');
+const { scanAntigravity, scanAntigravityFlavor, scanContinue, scanWindsurf, scanJetBrains, parseSkillsDir, scanOpenCode } = require('../lib/scanners');
 const { computeScore } = require('../lib/report');
 
 let tmpDir;
@@ -98,7 +98,137 @@ describe('scanAntigravity', () => {
   });
 });
 
+// ─── scanAntigravityFlavor ───────────────────────────────────────────
+
+describe('scanAntigravityFlavor', () => {
+  it('returns found:false when flavor dir missing', () => {
+    const gdir = path.join(tmpDir, 'no-flavor');
+    mkdirp(gdir);
+    assert.equal(scanAntigravityFlavor(gdir, 'antigravity-cli').found, false);
+  });
+
+  it('scans CLI flavor with plugins, settings, history, and import_manifest', () => {
+    const gdir = path.join(tmpDir, 'cli-flavor');
+    const cliDir = path.join(gdir, 'antigravity-cli');
+
+    // Skills
+    writeFile(path.join(cliDir, 'skills', 'brave-search', 'SKILL.md'),
+      '---\nname: brave-search\ndescription: Web search\n---');
+
+    // Brain conversation
+    mkdirp(path.join(cliDir, 'brain', 'conv-111'));
+
+    // MCP config
+    writeJSON(path.join(cliDir, 'mcp_config.json'), {
+      mcpServers: { 'gcloud': { command: 'npx' } }
+    });
+
+    // Plugins
+    mkdirp(path.join(cliDir, 'plugins', 'superpowers'));
+    mkdirp(path.join(cliDir, 'plugins', 'maestro'));
+
+    // Settings
+    writeJSON(path.join(cliDir, 'settings.json'), {
+      model: 'Gemini 3.5 Flash',
+      colorScheme: 'dark',
+      trustedWorkspaces: ['/home/user/proj'],
+      permissions: { allow: ['command(ls)', 'command(grep)'] },
+    });
+
+    // History
+    writeFile(path.join(cliDir, 'history.jsonl'),
+      '{"display":"hello","timestamp":1}\n{"display":"world","timestamp":2}\n');
+
+    // Import manifest
+    writeJSON(path.join(cliDir, 'import_manifest.json'), {
+      imports: [
+        { name: 'superpowers', source: 'gemini-cli', components: ['skills', 'hooks'] },
+      ]
+    });
+
+    // Cache
+    writeJSON(path.join(cliDir, 'cache', 'projects.json'), {
+      '/home/user/proj': 'conv-111',
+    });
+
+    const result = scanAntigravityFlavor(gdir, 'antigravity-cli');
+    assert.equal(result.found, true);
+    assert.equal(result.flavor, 'antigravity-cli');
+    assert.equal(result.skills.length, 1);
+    assert.equal(result.skills[0].source, 'antigravity-cli');
+    assert.equal(result.brain_conversations, 1);
+    assert.deepEqual(result.mcp_servers, ['gcloud']);
+    assert.deepEqual(result.plugins, ['maestro', 'superpowers']);
+    assert.equal(result.settings.model, 'Gemini 3.5 Flash');
+    assert.equal(result.settings.colorScheme, 'dark');
+    assert.equal(result.settings.trustedWorkspaces, 1);
+    assert.equal(result.settings.permissionRules, 2);
+    assert.equal(result.history_entries, 2);
+    assert.equal(result.import_manifest.imports.length, 1);
+    assert.equal(result.cached_projects, 1);
+  });
+
+  it('parses transcript.jsonl for brain intelligence', () => {
+    const gdir = path.join(tmpDir, 'transcript-parse');
+    const agDir = path.join(gdir, 'antigravity');
+    const logsDir = path.join(agDir, 'brain', 'conv-aaa', '.system_generated', 'logs');
+
+    const lines = [
+      JSON.stringify({ type: 'SYSTEM', created_at: '2026-06-01T10:00:00Z', tool_calls: [{ name: 'view_file' }] }),
+      JSON.stringify({ type: 'USER_INPUT', created_at: '2026-06-01T10:01:00Z', content: '<USER_REQUEST>\nfix the bug in scanner.js\n</USER_REQUEST>' }),
+      JSON.stringify({ type: 'PLANNER_RESPONSE', created_at: '2026-06-01T10:02:00Z', tool_calls: [{ name: 'replace_file_content' }, { name: 'run_command' }] }),
+    ];
+    writeFile(path.join(logsDir, 'transcript.jsonl'), lines.join('\n'));
+
+    // An artifact in the conv dir
+    writeFile(path.join(agDir, 'brain', 'conv-aaa', 'plan.md'), '# Plan');
+
+    const result = scanAntigravityFlavor(gdir, 'antigravity');
+    assert.equal(result.found, true);
+    assert.equal(result.brain_conversations, 1);
+    const bi = result.brain_intelligence;
+    assert.equal(bi.conversations_parsed, 1);
+    assert.equal(bi.total_steps, 3);
+    assert.equal(bi.user_prompt_count, 1);
+    assert.equal(bi.timespan.earliest, '2026-06-01T10:00:00Z');
+    assert.equal(bi.timespan.latest, '2026-06-01T10:02:00Z');
+    assert.equal(bi.tool_usage_top_20['view_file'], 1);
+    assert.equal(bi.tool_usage_top_20['replace_file_content'], 1);
+    assert.equal(bi.tool_usage_top_20['run_command'], 1);
+    assert.equal(bi.artifacts.md, 1);
+  });
+
+  it('falls back to transcript_full.jsonl when transcript.jsonl missing', () => {
+    const gdir = path.join(tmpDir, 'transcript-fallback');
+    const agDir = path.join(gdir, 'antigravity-cli');
+    const logsDir = path.join(agDir, 'brain', 'conv-bbb', '.system_generated', 'logs');
+
+    const lines = [
+      JSON.stringify({ type: 'SYSTEM', created_at: '2026-06-02T10:00:00Z', tool_calls: [{ name: 'grep_search' }] }),
+    ];
+    writeFile(path.join(logsDir, 'transcript_full.jsonl'), lines.join('\n'));
+
+    const result = scanAntigravityFlavor(gdir, 'antigravity-cli');
+    assert.equal(result.brain_intelligence.conversations_parsed, 1);
+    assert.equal(result.brain_intelligence.total_steps, 1);
+    assert.equal(result.brain_intelligence.tool_usage_top_20['grep_search'], 1);
+  });
+
+  it('backward-compat: scanAntigravity still works', () => {
+    const gdir = path.join(tmpDir, 'compat-test');
+    const agDir = path.join(gdir, 'antigravity');
+    mkdirp(path.join(agDir, 'brain', 'conv-1'));
+    writeJSON(path.join(agDir, 'mcp_config.json'), { mcpServers: { 'test': {} } });
+
+    const result = scanAntigravity(gdir);
+    assert.equal(result.found, true);
+    assert.equal(result.flavor, 'antigravity');
+    assert.equal(result.brain_conversations, 1);
+  });
+});
+
 // ─── scanContinue ────────────────────────────────────────────────────
+
 
 describe('scanContinue', () => {
   it('returns found:false when .continue missing', () => {

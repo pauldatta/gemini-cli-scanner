@@ -24,7 +24,9 @@ The scanner reads your local AI tool configuration directories — never modifyi
 | `/etc/gemini-cli/policies/` | **Admin policies** (Linux) — silently skipped if inaccessible |
 | `~/.claude/skills/` | Claude Code skill catalog |
 | `~/.claude/CLAUDE.md` | Claude context files |
-| `~/.gemini/antigravity/` | Antigravity: brain conversations, skills, MCP servers, knowledge items |
+| `~/.gemini/antigravity/` | Antigravity Desktop: brain conversations, skills, MCP servers, knowledge items |
+| `~/.gemini/antigravity-cli/` | Antigravity CLI: brain sessions, skills, plugins, settings, history, import manifest, MCP servers |
+| `~/.gemini/antigravity-ide/` | Antigravity IDE: brain conversations, skills, plugins, MCP servers |
 | `~/.continue/skills/` | Continue skills (symlink-aware) |
 | `~/.codeium/windsurf/skills/` | Windsurf skills (symlink-aware) |
 | `~/Library/.../JetBrains/Air/` | JetBrains AI rules and presence |
@@ -101,7 +103,9 @@ The scanner detects and reports on multiple AI coding tools:
 
 - **Gemini CLI** — full config, skills, agents, extensions, policies, conversations, memory, extraction state *(skipped if `~/.gemini` missing)*
 - **Claude Code** — skills, CLAUDE.md, project configs
-- **Antigravity** — brain conversations, knowledge items, MCP servers
+- **Antigravity Desktop** — brain conversations, skills, knowledge items, MCP servers
+- **Antigravity CLI** — brain sessions, skills, plugins, settings (model, permissions), history, import manifest (Gemini CLI migration), cached projects
+- **Antigravity IDE** — brain conversations, skills, plugins, MCP servers
 - **Continue** — skills (symlink-aware)
 - **Windsurf** — skills (symlink-aware)
 - **JetBrains AI** — rules and presence detection

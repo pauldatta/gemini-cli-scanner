@@ -2,6 +2,25 @@
 
 All notable changes to gemini-cli-scanner will be documented in this file.
 
+## [3.6.0] - 2026-06-15
+
+### Added
+- **Antigravity 2.0 Support:** Scanner now discovers all three Antigravity flavors — Desktop (`~/.gemini/antigravity/`), CLI (`~/.gemini/antigravity-cli/`), and IDE (`~/.gemini/antigravity-ide/`) — with per-flavor brain intelligence, skill counts, and MCP server detection
+- **CLI-Specific Data:** Extracts plugins (14 detected), settings (model, permissions, trusted workspaces), history entries, import manifest (Gemini CLI migration status), and cached project mappings from the Antigravity CLI directory
+- **Transcript Parsing Fix:** Brain intelligence now reads `transcript.jsonl` (the actual file) instead of `overview.txt` (which never existed in Antigravity brain directories), with fallback to `transcript_full.jsonl`
+- **Per-Flavor Report Sections:** Ecosystem table shows separate rows for Desktop, CLI, and IDE with flavor-specific details (plugins, history entries). Brain Intelligence section is generated per-flavor
+- **CLI Migration Section:** Report includes a "Gemini CLI Migration" table showing what extensions were imported and their component types
+- **CLI Settings Section:** Report shows the active model, color scheme, trusted workspace count, and permission rule count
+- 7 new tests for `scanAntigravityFlavor`: CLI flavor scanning, transcript.jsonl parsing, transcript_full.jsonl fallback, and backward compatibility
+- 263 tests across 12 test files (up from 258)
+
+### Changed
+- Report title changed from "Gemini CLI Environment Scan Report" to "AI Coding Environment Scan Report" to reflect the multi-tool nature of the scanner
+- `scanAntigravity` refactored to `scanAntigravityFlavor(gdir, flavor)` with `scanAntigravity` preserved as a backward-compatible alias
+- Maturity scorer counts "has Antigravity" as a single ecosystem point (not triple-counted across flavors)
+- Skill overlap analysis aggregates skills from all three Antigravity flavors
+- Manifest keys: `m.antigravity` (Desktop, backward compat), `m.antigravity_cli` (new), `m.antigravity_ide` (new)
+
 ## [3.5.8] - 2026-05-08
 
 ### Added

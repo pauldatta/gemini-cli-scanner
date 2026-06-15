@@ -39,7 +39,7 @@ npx gemini-cli-scanner --repos ~/Code --chat-days 30
 1. **Catalogs** your MCP servers, skills, extensions, agents, policies, and context files
 2. **Analyzes** conversation history — tools, models, topics, prompt patterns
 3. **Scores maturity** (0–67) across 11 categories with actionable recommendations
-4. **Discovers ecosystems** — Gemini CLI, Claude Code, Antigravity, Continue, Windsurf, JetBrains AI, OpenCode
+4. **Discovers ecosystems** — Gemini CLI, Claude Code, Antigravity (Desktop, CLI, IDE), Continue, Windsurf, JetBrains AI, OpenCode
 5. **Suggests skills** using a two-stage AI pipeline grounded in your real usage data
 6. **Produces** a shareable JSON manifest + markdown report (credentials auto-redacted)
 

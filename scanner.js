@@ -12,7 +12,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const https = require('node:https');
 const { parseArgs } = require('node:util');
-const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos, scanAntigravity, scanContinue, scanWindsurf, scanJetBrains, scanMemoryTiers, scanSkillExtraction, scanAdminPolicies, scanOpenCode } = require('./lib/scanners');
+const { scanSettings, scanGeminiMd, scanSkills, scanAgents, scanExtensions, scanPolicies, scanClaude, scanConversations, scanProjectGeminiMds, scanRepos, scanAntigravityFlavor, scanContinue, scanWindsurf, scanJetBrains, scanMemoryTiers, scanSkillExtraction, scanAdminPolicies, scanOpenCode } = require('./lib/scanners');
 const { suggestSkills } = require('./lib/suggest');
 const { computeScore, generateReport } = require('./lib/report');
 const { runAdvisory } = require('./lib/advisor');
@@ -223,11 +223,15 @@ async function main() {
     m.project_gemini_mds = [];
   }
 
-  // AI Tool Ecosystem
+  // AI Tool Ecosystem — scan all three Antigravity flavors
   if (geminiDirExists) {
-    console.log('  → Antigravity (brain, skills, MCP)...');  m.antigravity = scanAntigravity(gdir);
+    console.log('  → Antigravity Desktop (brain, skills, MCP)...');  m.antigravity = scanAntigravityFlavor(gdir, 'antigravity');
+    console.log('  → Antigravity CLI (brain, plugins, history)...');  m.antigravity_cli = scanAntigravityFlavor(gdir, 'antigravity-cli');
+    console.log('  → Antigravity IDE (brain, skills, MCP)...');       m.antigravity_ide = scanAntigravityFlavor(gdir, 'antigravity-ide');
   } else {
     m.antigravity = { found: false };
+    m.antigravity_cli = { found: false };
+    m.antigravity_ide = { found: false };
   }
   console.log('  → Continue (.continue)...');               m.continue_dev = scanContinue(home);
   console.log('  → Windsurf (.codeium)...');                m.windsurf = scanWindsurf(home);
