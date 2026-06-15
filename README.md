@@ -5,10 +5,10 @@
 [![Node.js](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)](https://nodejs.org)
 [![License](https://img.shields.io/github/license/pauldatta/gemini-cli-scanner)](LICENSE)
 
-Discover patterns in your Gemini CLI and Claude Code environments. Extract tribal knowledge from how you *actually* use AI coding tools and surface it as reusable skills, agents, and best practices.
+Audit your AI coding tool ecosystem — Gemini CLI, Claude Code, Antigravity 2.0 (Desktop, CLI, IDE), Continue, Windsurf, JetBrains AI, and OpenCode. Extract tribal knowledge from how you *actually* use AI coding tools and surface it as reusable skills, agents, and best practices.
 
 <p align="center">
-  <img src="docs/images/tui-main-menu.png" alt="gemini-cli-scanner TUI" width="520">
+  <img src="docs/public/images/tui-main-menu.png" alt="gemini-cli-scanner TUI" width="520">
 </p>
 
 ## Quick Start
@@ -54,7 +54,7 @@ The advisory engine evaluates 11 categories and assigns a maturity tier:
 | ⚡ Advanced | 47–60 | Strong policies, skills, MCP governance |
 | 🏆 Expert | 61–67 | Full-stack: hooks, extensions, context architecture |
 
-📖 **[Full scoring breakdown and category details →](docs/advisory-engine.md)**
+📖 **[Full scoring breakdown and category details →](docs/reference/advisory-engine.md)**
 
 ## Install as Agent Skill
 
@@ -97,7 +97,7 @@ export GOOGLE_API_KEY="your-key"
 
 Without these, the scanner runs fully — it just skips AI-powered skill suggestions.
 
-📖 **[Skill suggestion pipeline details →](docs/skill-suggestions.md)**
+📖 **[Skill suggestion pipeline details →](docs/reference/skill-suggestions.md)**
 
 ## CLI Options
 
@@ -176,11 +176,11 @@ Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub 
 
 | Doc | Description |
 |:---|:---|
-| 📊 [Advisory Engine](docs/advisory-engine.md) | Scoring categories, maturity tiers, detailed point breakdowns |
-| 🔍 [Scanning Reference](docs/scanning.md) | What gets scanned, recursive discovery, ecosystem detection |
-| 🤖 [Skill Suggestions](docs/skill-suggestions.md) | Two-stage AI pipeline, quality standards, methodology |
-| 📖 [Skill Identification](docs/skill-identification.md) | How patterns are extracted from conversation history |
-| 👥 [For Teams](docs/teams.md) | Cross-team aggregation, maturity benchmarking, enterprise patterns |
+| 📊 [Advisory Engine](docs/reference/advisory-engine.md) | Scoring categories, maturity tiers, detailed point breakdowns |
+| 🔍 [Scanning Reference](docs/reference/scanning.md) | What gets scanned, recursive discovery, ecosystem detection |
+| 🤖 [Skill Suggestions](docs/reference/skill-suggestions.md) | Two-stage AI pipeline, quality standards, methodology |
+| 👥 [For Teams](docs/guide/teams.md) | Cross-team aggregation, maturity benchmarking, enterprise patterns |
+| 🌐 [Full Documentation](https://pauldatta.github.io/gemini-cli-scanner/) | VitePress docs site with search, dark mode, and all guides |
 
 ## Developer Install
 
@@ -188,7 +188,7 @@ Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub 
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
 cd gemini-cli-scanner
 make          # Interactive TUI
-make test     # 258 tests across 12 test files
+make test     # 263 tests across 12 test files
 ```
 
 ## Contributing
