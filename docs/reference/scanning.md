@@ -4,7 +4,7 @@ The scanner reads your local AI tool configuration directories — never modifyi
 
 ## Architecture
 
-![Scanner Pipeline](images/scanner-pipeline.png)
+![Scanner Pipeline](/images/scanner-pipeline.png)
 
 ## Source Reference
 

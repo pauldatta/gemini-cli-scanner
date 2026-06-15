@@ -4,7 +4,7 @@ The scanner identifies repeating patterns in your conversation history and gener
 
 ## Pipeline
 
-![Skill Suggestion Pipeline](images/skill-pipeline.png)
+![Skill Suggestion Pipeline](/images/skill-pipeline.png)
 
 ## Evidence Gating
 

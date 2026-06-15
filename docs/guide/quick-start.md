@@ -99,5 +99,5 @@ Auto-redacted: API keys (`AIza...`, `sk-...`), OAuth tokens (`ya29...`), GitHub 
 git clone https://github.com/pauldatta/gemini-cli-scanner.git
 cd gemini-cli-scanner
 make          # Interactive TUI
-make test     # 258 tests across 12 test files
+make test     # 263 tests across 12 test files
 ```
